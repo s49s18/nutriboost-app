@@ -1,5 +1,9 @@
 export const Colors = {
-  primary: "#6849a7",
+  primary: "purple",
+  secondary: "#61CCAB",
+  tertiary: "#ADC867",
+  quartery: "#D2C747",
+  quintery: "#4BCDBE",
   warning: "#cc475a",
   
   dark: {
@@ -10,6 +14,8 @@ export const Colors = {
     iconColor: "#9591a5",
     iconColorFocused: "#fff",
     uiBackground: "#2f2b3d",
+    header: "#61CCAB",
+    highlight: "#4BCDBE",
   },
   light: {
     text: "#625f72",
@@ -19,5 +25,7 @@ export const Colors = {
     iconColor: "#686477",
     iconColorFocused: "#201e2b",
     uiBackground: "#d6d5e1",
+    header: "purple",
+    highlight: "#61CCAB",
   },
 }

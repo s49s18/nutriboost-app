@@ -1,6 +1,6 @@
 import { StyleSheet, Text, Keyboard, TouchableWithoutFeedback } from 'react-native'
 import { Link, useRouter } from 'expo-router'
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { useUser } from '../../hooks/useUser' // <-- Import useUser to access user context
 import { Colors } from '../../constants/Colors'
 
@@ -10,7 +10,7 @@ import ThemedText from '../../components/ThemedText'
 import Spacer from '../../components/Spacer'
 import ThemedButton from '../../components/ThemedButton'
 
-const Register = () => {
+export default function Register() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [firstname, setFirstname] = useState('');
@@ -99,8 +99,6 @@ const Register = () => {
    </TouchableWithoutFeedback>
   )
 }
-
-export default Register
 
 const styles = StyleSheet.create({
   container: {

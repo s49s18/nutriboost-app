@@ -1,4 +1,4 @@
-import { StyleSheet, Keyboard, Text, TouchableWithoutFeedback } from 'react-native'
+import { StyleSheet, Keyboard, Text, TouchableWithoutFeedback, Pressable } from 'react-native'
 import { Link, useRouter } from 'expo-router' // <-- Import useRouter
 import { useState } from 'react'
 import { useUser } from '../../hooks/useUser'  // <-- Import useUser to access user context
@@ -10,7 +10,7 @@ import ThemedButton from '../../components/ThemedButton'
 import Spacer from '../../components/Spacer'
 import ThemedTextInput from '../../components/ThemedTextInput'
 
-const Login = () => {
+export default function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
@@ -31,7 +31,7 @@ const Login = () => {
        try {
         const { user, error } = await login(email, password);
         if (error) {
-          setError(error.message);
+          setError(error);
           setLoading(false);
           return;
         }
@@ -39,7 +39,7 @@ const Login = () => {
         router.replace('/'); // <-- Navigate to index.jsx (root)
       } catch (error) {
         console.log('Login error:', error)
-        setError(error.message)
+        setError(error)
       }
     }
 
@@ -71,6 +71,10 @@ const Login = () => {
             <ThemedButton onPress={handleSubmit}>
                 <Text style={styles.buttonText}>Login</Text>
             </ThemedButton>
+            <Spacer height={20}/>
+            <Pressable onPress={() => router.push('/forgot-password')}>
+              <ThemedText style={styles.link}>Passwort vergessen?</ThemedText>
+            </Pressable>
             <Spacer />
             {error && <Text style={styles.error}>{error}</Text>}
 
@@ -84,8 +88,6 @@ const Login = () => {
       </TouchableWithoutFeedback>
     )
 }
-
-export default Login
 
 const styles = StyleSheet.create({
   container: {
