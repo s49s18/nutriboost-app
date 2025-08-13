@@ -1,116 +1,122 @@
-import { StyleSheet, View } from 'react-native';
-import React, { useState, useEffect } from 'react';
+import { StyleSheet, View, Image, ScrollView } from 'react-native';
+import React, { useContext, useState, useEffect } from 'react';
 import { useLocalSearchParams } from 'expo-router';
-import { supabase } from '../../../lib/supabaseClient';
+import { NutrientsContext } from '../../../contexts/NutrientsContext';
 
 import ThemedText from "../../../components/ThemedText";
-import ThemedView from "../../../components/ThemedView";
+import ThemedScrollView from "../../../components/ThemedScrollView";
 import Spacer from "../../../components/Spacer";
 import { Colors } from '../../../constants/Colors';
+import ThemedLoader from '../../../components/ThemedLoader';
 
 const NutrientDetail = () => {
-    // Holt die dynamische ID aus der URL
-    const { id } = useLocalSearchParams();
-    const [nutrient, setNutrient] = useState(null);
-    const [loading, setLoading] = useState(true);
+  const { id } = useLocalSearchParams();
+  const { fetchNutrientById } = useContext(NutrientsContext);
 
-    // Lade die Daten für den spezifischen Nährstoff
-    useEffect(() => {
-        async function fetchNutrient() {
+  const [nutrient, setNutrient] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadData() {
             if (!id) return;
             setLoading(true);
-            try {
-                const { data, error } = await supabase
-                    .from('nutrients')
-                    .select('*')
-                    .eq('id', id)
-                    .single();
 
-                if (error) {
-                    console.error('Fehler beim Laden der Nährstoffdetails:', error);
-                    setNutrient(null);
-                } else {
-                    setNutrient(data);
-                }
-            } catch (error) {
-                console.error('Ein unerwarteter Fehler ist aufgetreten:', error);
-            } finally {
-                setLoading(false);
-            }
+            const data = await fetchNutrientById(id);
+            setNutrient(data);
+
+            setLoading(false);
         }
 
-        fetchNutrient();
-    }, [id]); // Führe dies aus, wenn sich die ID ändert
+        loadData();
+    }, [id]);
 
-    if (loading) {
-        return (
-            <ThemedView style={styles.container}>
-                <ThemedText>Lade Details...</ThemedText>
-            </ThemedView>
-        );
-    }
+  if (loading) {
+    return <ThemedLoader/>;
+  }
 
-    if (!nutrient) {
-        return (
-            <ThemedView style={styles.container}>
-                <ThemedText>Nährstoff nicht gefunden.</ThemedText>
-            </ThemedView>
-        );
-    }
+  if (!nutrient) {
+    return <ThemedText>Nährstoff nicht gefunden.</ThemedText>;
+  }
 
-    return (
-        <ThemedView style={styles.container}>
-            <ThemedText title={true} style={styles.nutrientTitle}>{nutrient.name}</ThemedText>
-            <Spacer height={20} />
+  return (
+    <ThemedScrollView style={styles.container}>
+      {/* Headerbild */}
+      {nutrient.image_url && (
+        <Image source={{ uri: nutrient.image_url }} style={styles.headerImage} />
+      )}
 
-            <View style={styles.infoRow}>
-                <ThemedText style={styles.infoLabel}>Min. tägl. Bedarf:</ThemedText>
-                <ThemedText style={styles.infoValue}>{nutrient.min_daily}</ThemedText>
-            </View>
-            <View style={styles.infoRow}>
-                <ThemedText style={styles.infoLabel}>Max. tägl. Bedarf:</ThemedText>
-                <ThemedText style={styles.infoValue}>{nutrient.max_daily}</ThemedText>
-            </View>
-            <View style={styles.infoRow}>
-                <ThemedText style={styles.infoLabel}>Einheit:</ThemedText>
-                <ThemedText style={styles.infoValue}>{nutrient.unit}</ThemedText>
-            </View>
-            <Spacer height={20} />
-            <ThemedText style={styles.description}>{nutrient.description}</ThemedText>
-        </ThemedView>
-    );
+      {/* Titel */}
+      <ThemedText title style={styles.nutrientTitle}>
+        {nutrient.name}
+      </ThemedText>
+      <ThemedText style={styles.category}>{nutrient.category}</ThemedText>
+      <Spacer height={20} />
+
+      {/* Basisinfos */}
+      <View style={styles.infoCard}>
+        <InfoRow label="Min. tägl. Bedarf" value={`${nutrient.min_daily} ${nutrient.unit}`} />
+        <InfoRow label="Max. tägl. Bedarf" value={`${nutrient.max_daily} ${nutrient.unit}`} />
+        {nutrient.sources && <InfoRow label="Hauptquellen" value={nutrient.sources} />}
+      </View>
+
+      <Spacer height={20} />
+
+      {/* Beschreibung */}
+      {nutrient.short_description && (
+        <>
+          <ThemedText style={styles.sectionTitle}>Kurzbeschreibung</ThemedText>
+          <ThemedText style={styles.text}>{nutrient.short_description}</ThemedText>
+          <Spacer height={10} />
+        </>
+      )}
+
+      {nutrient.functions && (
+        <>
+          <ThemedText style={styles.sectionTitle}>Funktionen im Körper</ThemedText>
+          <ThemedText style={styles.text}>{nutrient.functions}</ThemedText>
+          <Spacer height={10} />
+        </>
+      )}
+
+      {nutrient.deficiency && (
+        <>
+          <ThemedText style={styles.sectionTitle}>Mangelerscheinungen</ThemedText>
+          <ThemedText style={styles.text}>{nutrient.deficiency}</ThemedText>
+          <Spacer height={10} />
+        </>
+      )}
+
+    </ThemedScrollView>
+  );
 };
+
+const InfoRow = ({ label, value }) => (
+  <View style={styles.infoRow}>
+    <ThemedText style={styles.infoLabel}>{label}</ThemedText>
+    <ThemedText style={styles.infoValue}>{value}</ThemedText>
+  </View>
+);
 
 export default NutrientDetail;
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        padding: 20,
-    },
-    nutrientTitle: {
-        fontSize: 28,
-        fontWeight: 'bold',
-        textAlign: 'center',
-        color: Colors.primary,
-    },
-    infoRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingVertical: 10,
-        borderBottomWidth: 1,
-        borderBottomColor: Colors.light.iconColor,
-    },
-    infoLabel: {
-        fontWeight: 'bold',
-        fontSize: 16,
-    },
-    infoValue: {
-        fontSize: 16,
-    },
-    description: {
-        fontSize: 16,
-        lineHeight: 24,
-    },
+  container: { flex: 1,  },
+  headerImage: { width: '100%', height: 200, borderBottomLeftRadius: 12, borderBottomRightRadius: 12 },
+  nutrientTitle: { fontSize: 28, fontWeight: 'bold', textAlign: 'center', marginTop: 15, color: Colors.primary },
+  category: { fontSize: 16, textAlign: 'center', color: Colors.light.iconColor },
+  infoCard: {
+    backgroundColor: Colors.light.background,
+    borderRadius: 12,
+    padding: 15,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 3,
+    marginHorizontal: 15
+  },
+  infoRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6 },
+  infoLabel: { fontWeight: 'bold', fontSize: 15 },
+  infoValue: { fontSize: 15 },
+  sectionTitle: { fontWeight: 'bold', fontSize: 18, marginHorizontal: 15, marginTop: 10 },
+  text: { fontSize: 15, lineHeight: 22, marginHorizontal: 15 },
 });

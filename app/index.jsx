@@ -11,6 +11,30 @@ import ThemedText from '../components/ThemedText'
 import { UserContext } from '../contexts/UserContexts';
 import { Colors } from '../constants/Colors';
 
+import * as Notifications from 'expo-notifications';
+
+Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: false,
+      shouldSetBadge: false,
+    }),
+});
+
+const registerForPushNotificationsAsync = async () => {
+  const { status: existingStatus } = await Notifications.getPermissionsAsync();
+  let finalStatus = existingStatus;
+  if (existingStatus !== 'granted') {
+    const { status } = await Notifications.requestPermissionsAsync();
+    finalStatus = status;
+  }
+  if (finalStatus !== 'granted') {
+    alert('Failed to get push token for push notification!');
+    return;
+  }
+  // Der Token ist für Push-Nachrichten, aber die Permissions gelten auch für lokale Notifications
+};
+
 const Home = () => {
   const { user, logout } = useContext(UserContext);
   return (

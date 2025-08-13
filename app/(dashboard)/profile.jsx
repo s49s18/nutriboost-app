@@ -9,69 +9,18 @@ import ThemedView from "../../components/ThemedView"
 import { UserContext } from '../../contexts/UserContexts';
 import ThemedLoader from '../../components/ThemedLoader';
 import { Colors } from '../../constants/Colors';
+import { NutrientsContext } from '../../contexts/NutrientsContext';
 
 const Profile = () => {
   const { user } = useContext(UserContext);
-  const [trackedNutrients, setTrackedNutrients] = useState([]);
-  const [loadingNutrients, setLoadingNutrients] = useState(true);
+  const { allNutrients, trackedNutrients } = useContext(NutrientsContext);
 
-   // Laden der Nährstoffe, die der Benutzer verfolgt
-  useEffect(() => {
-    async function fetchNutrients() {
-      if (!user) return; // Beende, wenn kein Benutzer angemeldet ist
-      setLoadingNutrients(true);
-
-      try {
-        // Schritt 1: Hole die Nutrient-IDs des Benutzers
-        const { data: userNutrientsData, error: userNutrientsError } = await supabase
-          .from('user_nutrients')
-          .select('nutrient_id')
-          .eq('user_id', user.id);
-
-        if (userNutrientsError) {
-          console.error('Fehler beim Laden der Benutzer-Nährstoffe:', userNutrientsError);
-          setLoadingNutrients(false);
-          return;
-        }
-
-        const nutrientIds = userNutrientsData.map(item => item.nutrient_id);
-
-        if (nutrientIds.length === 0) {
-          setTrackedNutrients([]);
-          setLoadingNutrients(false);
-          return;
-        }
-
-        // Schritt 2: Hole die Nährstoffnamen anhand der IDs
-        const { data: nutrients, error: nutrientsError } = await supabase
-          .from('nutrients')
-          .select('name')
-          .in('id', nutrientIds);
-
-        if (nutrientsError) {
-          console.error('Fehler beim Laden der Nährstoffnamen:', nutrientsError);
-          setLoadingNutrients(false);
-          return;
-        }
-
-        setTrackedNutrients(nutrients.map(n => n.name));
-
-      } catch (error) {
-        console.error('Ein unerwarteter Fehler ist aufgetreten:', error);
-      } finally {
-        setLoadingNutrients(false);
-      }
-    }
-
-    fetchNutrients();
-  }, [user]); // Führe dies aus, wenn der Benutzer-Kontext geladen oder geändert wird
+  const trackedNames = trackedNutrients
+  .map(id => allNutrients.find(n => n.id === id)?.name)
+  .filter(Boolean); 
 
   // Zeige einen Ladezustand, wenn die Daten noch nicht geladen sind
-  if (loadingNutrients) {
-    return (
-      <ThemedLoader/>
-    );
-  }
+  if (!user) return <ThemedLoader />;
 
   return (
     <ThemedView style={styles.container}>
@@ -86,11 +35,13 @@ const Profile = () => {
 
       <ThemedView style={styles.infoRow}>
         <ThemedText title={true} style={styles.heading}>Nutritions to track:</ThemedText>
-        {trackedNutrients.length > 0 ? (
-            <ThemedText> {trackedNutrients.join(', ')}</ThemedText>
-         ) : (
-            <ThemedText> None yet</ThemedText>
-         )}
+        {trackedNames.length > 0 ? (
+          <ThemedView style={{ maxWidth: '50%'}}>
+            <ThemedText> {trackedNames.join(', ')}</ThemedText>
+          </ThemedView>
+        ) : (
+          <ThemedText>None yet</ThemedText>
+        )}
       </ThemedView>
       <Spacer height={20} />
         {/* Zeigt einen Link nur an, wenn der Benutzer noch keine Nährstoffe hat */}

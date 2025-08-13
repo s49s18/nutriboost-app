@@ -3,6 +3,7 @@ import React, { use } from 'react'
 import { Stack } from 'expo-router'
 import { Colors } from '../constants/Colors'
 import { UserProvider } from '../contexts/UserContexts'
+import { NutrientsProvider } from '../contexts/NutrientsContext'
 
 const RootLayout = () => {
 
@@ -11,6 +12,7 @@ const RootLayout = () => {
 
   return (
     <UserProvider>
+      <NutrientsProvider>
         <Stack screenOptions={{ 
             headerStyle: { backgroundColor: theme.navBackground },
             headerTintColor: theme.title,
@@ -22,6 +24,7 @@ const RootLayout = () => {
             <Stack.Screen name="about" options={{ title: 'About' }} />
             <Stack.Screen name="contact" options={{ title: 'Contact' }} />
         </Stack>
+       </NutrientsProvider>
     </UserProvider>
   )
 }

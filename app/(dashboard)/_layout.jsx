@@ -27,8 +27,16 @@ export default function DashboardLayout() {
           options={{ title: "Nutrients", tabBarIcon: ({ color, focused }) => <Ionicons name={focused ? "nutrition" : "nutrition-outline"} color={color} size={24} /> }} 
         />
         <Tabs.Screen 
-          name="create"
-          options={{ title: "Create", tabBarIcon: ({ color, focused }) => <Ionicons name={focused ? "create" : "create-outline"} color={color} size={24} /> }} 
+          name="home"
+          options={{ title: "Home", tabBarIcon: ({ color, focused }) => <Ionicons name={focused ? "home" : "home-outline"} color={color} size={24} /> }} 
+        />
+        <Tabs.Screen 
+          name="overview"
+          options={{ title: "Overview", tabBarIcon: ({ color, focused }) => <Ionicons name={focused ? "bar-chart" : "bar-chart-outline"} color={color} size={24} /> }} 
+        />
+        <Tabs.Screen 
+          name="reminders"
+          options={{ title: "Reminder", tabBarIcon: ({ color, focused }) => <Ionicons name={focused ? "time" : "time-outline"} color={color} size={24} /> }} 
         />
       </Tabs>
     </UserOnly>
