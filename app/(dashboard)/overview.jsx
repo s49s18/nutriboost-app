@@ -3,6 +3,7 @@ import { View, StyleSheet, TouchableOpacity, FlatList, Text, Dimensions, Alert }
 import ThemedText from '../../components/ThemedText';
 import ThemedView from '../../components/ThemedView';
 import ThemedHeader from '../../components/ThemedHeader';
+import ThemedLineChart from '../../components/ThemedLineChart';
 import Spacer from '../../components/Spacer';
 import { Colors } from '../../constants/Colors';
 import { UserContext } from '../../contexts/UserContexts';
@@ -83,38 +84,6 @@ const SupplementOverviewScreen = () => {
     }
   };
 
-  // Funktion zum Protokollieren einer Einnahme
-  const logIntake = async () => {
-    if (!user || !selectedNutrient) {
-      Alert.alert('Fehler', 'Bitte wähle einen Nährstoff aus.');
-      return;
-    }
-
-    try {
-      const today = format(new Date(), 'yyyy-MM-dd');
-
-      const { error } = await supabase
-        .from('user_nutrient_log')
-        .insert({
-          user_id: user.id,
-          nutrient_id: selectedNutrient.id,
-          date: today,
-          taken: true,
-        });
-
-      if (error) {
-        throw error;
-      }
-
-      setMessage(`${selectedNutrient.name} Einnahme für heute protokolliert!`);
-      // Lade die Daten neu, um das Diagramm zu aktualisieren
-      fetchAndFormatIntakeData(selectedNutrient.id);
-    } catch (error) {
-      console.error('Fehler beim Protokollieren der Einnahme:', error.message);
-      setMessage('Fehler beim Speichern der Einnahme.');
-    }
-  };
-
   // Effekt, um die Einnahmedaten zu laden, wenn ein Nährstoff ausgewählt wird
   useEffect(() => {
     if (selectedNutrient) {
@@ -150,23 +119,12 @@ const SupplementOverviewScreen = () => {
       </View>
 
       <Spacer/>
-      
-      {/*{/* Button zum Protokollieren einer Einnahme */}
-      {selectedNutrient && (
-        <TouchableOpacity onPress={logIntake} style={styles.logButton}>
-          <Text style={styles.logButtonText}>Einnahme protokollieren für {selectedNutrient.name}</Text>
-        </TouchableOpacity>
-      )}
-
-      {message ? <ThemedText style={styles.message}>{message}</ThemedText> : null}
-
-      <Spacer/>
 
       {/* Diagramm-Anzeige */}
       {intakeData ? (
         <View style={styles.chartContainer}>
           <ThemedText style={styles.chartTitle}>{selectedNutrient.name} Einnahme (letzte 7 Tage)</ThemedText>
-          <LineChart
+          {/*<LineChart
             data={intakeData}
             width={screenWidth * 0.9} // Diagrammbreite
             height={220}
@@ -190,7 +148,8 @@ const SupplementOverviewScreen = () => {
               marginVertical: 8,
               borderRadius: 16
             }}
-          />
+          />*/}
+          <ThemedLineChart data={intakeData} />
         </View>
       ) : (
         <ThemedText style={styles.message}>Wähle einen Nährstoff, um die Einnahmen anzuzeigen.</ThemedText>
@@ -230,7 +189,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   selectedNutrientPill: {
-    backgroundColor: Colors.quintery,
+    backgroundColor: Colors.quinery,
   },
   pillText: {
     color: '#000',

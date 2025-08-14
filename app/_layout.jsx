@@ -1,18 +1,25 @@
 import { StyleSheet, Text, useColorScheme, View } from 'react-native'
-import React, { use } from 'react'
-import { Stack } from 'expo-router'
+import { usePathname } from 'expo-router';
+import { Stack, useSegments } from 'expo-router';
 import { Colors } from '../constants/Colors'
 import { UserProvider } from '../contexts/UserContexts'
 import { NutrientsProvider } from '../contexts/NutrientsContext'
+import AppHeader from '../components/AppHeader';
 
 const RootLayout = () => {
-
+  //const segments = useSegments(); // aktuelle Route
+  // Header nur auf bestimmten Seiten anzeigen
+  // const showHeader = !segments.includes('(auth)') && pathname === '/';
+  // const pathname = usePathname();
+  // const isLandingPage = pathname === '/'
     const colorScheme = useColorScheme()
     const theme = Colors[colorScheme ] ?? Colors.light
 
   return (
     <UserProvider>
       <NutrientsProvider>
+         {/* Header nur, wenn nicht Landingpage oder auth */}
+        {/*showHeader && <AppHeader />*/}
         <Stack screenOptions={{ 
             headerStyle: { backgroundColor: theme.navBackground },
             headerTintColor: theme.title,

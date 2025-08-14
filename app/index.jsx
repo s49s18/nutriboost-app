@@ -1,94 +1,83 @@
 import { StyleSheet, Text, View, Image } from 'react-native'
 import { Link } from 'expo-router'
-import React, { useContext } from 'react';
 import 'react-native-url-polyfill/auto';
+import { useEffect } from 'react';
+import { useRouter } from 'expo-router';
+import { useContext } from 'react';
+import { UserContext } from '../contexts/UserContexts';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 // themed components
 import ThemedView from '../components/ThemedView'
+import AnimatedLinkButton from '../components/AnimatedLinkButton'
 import ThemedLogo from '../components/ThemedLogo'
 import Spacer from '../components/Spacer'
 import ThemedText from '../components/ThemedText'
-import { UserContext } from '../contexts/UserContexts';
 import { Colors } from '../constants/Colors';
 
-import * as Notifications from 'expo-notifications';
-
-Notifications.setNotificationHandler({
-    handleNotification: async () => ({
-      shouldShowAlert: true,
-      shouldPlaySound: false,
-      shouldSetBadge: false,
-    }),
-});
-
-const registerForPushNotificationsAsync = async () => {
-  const { status: existingStatus } = await Notifications.getPermissionsAsync();
-  let finalStatus = existingStatus;
-  if (existingStatus !== 'granted') {
-    const { status } = await Notifications.requestPermissionsAsync();
-    finalStatus = status;
-  }
-  if (finalStatus !== 'granted') {
-    alert('Failed to get push token for push notification!');
-    return;
-  }
-  // Der Token ist für Push-Nachrichten, aber die Permissions gelten auch für lokale Notifications
-};
-
 const Home = () => {
-  const { user, logout } = useContext(UserContext);
-  return (
-    <ThemedView style={styles.container}>
-      {/* HEADER SECTION */}
-      <ThemedView style={styles.header}>
-        <ThemedLogo style={styles.img} />
-        {/* Navigation links for logged-in users */}
-        {user ? (
-          <View style={styles.headerLinks}>
-            <Link href="/profile" style={styles.profileLink}>
-              <ThemedText>Profile Page</ThemedText>
-            </Link>
-            {/* Logout-Text verwendet jetzt ThemedText für Konsistenz mit dem Theme */}
-            <ThemedText style={styles.logout} onPress={logout}>
-              Logout
-            </ThemedText>
-          </View>
-        ) : (
-          <ThemedView style={styles.headerLinks}>
-            {/* Links verwenden ThemedText für Konsistenz */}
-            <Link href="/login" style={styles.headerLink}>
-              <ThemedText>Login</ThemedText>
-            </Link>
-            <Link href="/register" style={styles.headerLink}>
-              <ThemedText>Register</ThemedText>
-            </Link>
-          </ThemedView>
-        )}
-      </ThemedView>
 
+  const imageUrl = 'https://yekfgrbbsvfimdaokldr.supabase.co/storage/v1/object/sign/assets/headerImage.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9lM2I3MTU2ZC0zZTliLTQ4ZDAtOGQwMS02OWIyODMxOTk0MzYiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJhc3NldHMvaGVhZGVySW1hZ2UuanBnIiwiaWF0IjoxNzU1MTgwMjY0LCJleHAiOjE3ODY3MTYyNjR9.AIcq5WkmBgil09K10YsKOaLboesih7Mi-v7-JsyLc3U'
+  const imageUrl2 = 'https://yekfgrbbsvfimdaokldr.supabase.co/storage/v1/object/sign/assets/header2%20(1).jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9lM2I3MTU2ZC0zZTliLTQ4ZDAtOGQwMS02OWIyODMxOTk0MzYiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJhc3NldHMvaGVhZGVyMiAoMSkuanBnIiwiaWF0IjoxNzU1MTgyMzMyLCJleHAiOjE3ODY3MTgzMzJ9.UI-keEYYrilIrtRUlp4oKSRPi8p2qlAzTAs-ZfaTAcI'
+  
+  const { user } = useContext(UserContext);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (user) {
+      router.replace('/dashboard');
+    }
+  }, [user]);
+
+  return (
+    <SafeAreaView style={{ flex: 1 }}>
+    <ThemedView style={styles.container}>
+      <Image source={{ uri: imageUrl2 }} style={styles.headerImage} resizeMode="cover" />
       {/* MAIN CONTENT SECTION */}
       <ThemedView style={styles.mainContent}>
-        {/* Farbe wird jetzt aus der Colors-Konstante verwendet */}
-        <ThemedText style={[styles.headerText, { color: Colors.secondary }]} title={true}>
-          Nutri-Boost
-        </ThemedText>
-        <Spacer height={5} />
-        <ThemedText style={styles.footerText}>The App to track and know your most important nutrients</ThemedText>
-        <Spacer height={20} />
+         {/* HEADER */}
+        <View style={styles.header}>
+          <ThemedText style={styles.brand}>Nutri-Boost</ThemedText>
+        </View>
+        <Spacer height={10}/>
+        <ThemedText style={styles.tagline} title>
+            Track Your Health, Boost Your Life
+          </ThemedText>
+          <Spacer height={5} />
+          <ThemedText style={styles.description}>
+            The App to track and know your most important nutrients
+          </ThemedText>
+          <Spacer height={20} />
 
-        {/* USER INFO CARD */}
-        <ThemedView style={styles.card}>
-          {user ? (
-            <>
-              <Text>👋 Welcome, {user.profile?.firstname} {user.profile?.lastname}</Text>
-              <Text>Email: {user.email}</Text>
-            </>
-          ) : (
-            <Text>Please log in, to start improving your nutrition!</Text>
-          )}
-        </ThemedView>
+          {/* CARD */}
+          <View style={styles.card}>
+            {user ? (
+              <>
+                <Text style={styles.welcome}>
+                  👋 Welcome, {user.profile?.firstname} {user.profile?.lastname}
+                </Text>
+                <Text style={styles.email}>Email: {user.email}</Text>
+              </>
+            ) : (
+              <>
+                <Text style={styles.info}>
+                  Please log in to start improving your nutrition!
+                </Text>
+                <Spacer height={15} />
+                <View style={styles.buttonRow}>
+                  <AnimatedLinkButton href="/register" style={[styles.button, styles.buttonRegister]}>
+                    <Text style={styles.buttonText}>Register</Text>
+                  </AnimatedLinkButton>
+                  <AnimatedLinkButton href="/login" style={[styles.button, styles.buttonLogin]}>
+                    <Text style={styles.buttonText}>Login</Text>
+                  </AnimatedLinkButton>
+                </View>
+              </>
+            )}
+          </View>
       </ThemedView>
     </ThemedView>
+    </SafeAreaView>
   )
 }
 
@@ -97,44 +86,40 @@ export default Home
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 50, // Added padding to account for the header
-  },
-  header: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    zIndex: 1,
-  },
-  headerLinks: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 15,
-  },
-  headerLink: {
-    fontSize: 15,
-    fontWeight: 'bold',
-    borderBottomWidth: 1,
-  },
-  profileLink: {
-    fontSize: 15,
-    fontWeight: 'bold',
-    borderBottomWidth: 1,
   },
   mainContent: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  headerText: {
+  headerImage: {
+    width: '100%',
+    height: 200,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 3 },
+    shadowRadius: 5,
+    elevation: 5, // Android
+  },
+  header: {
+    alignItems: 'center',
+  },
+  brand: {
+    fontSize: 32,
     fontWeight: 'bold',
-    fontSize: 28,
+  },
+  tagline: {
+    fontSize: 20,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  description: {
+    fontSize: 16,
+    textAlign: 'center',
+    width: '85%',
+    color: '#555',
   },
   bodyText: {
     fontSize: 22,
@@ -143,10 +128,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     width: '80%',
     textAlign: 'center',
-  },
-  img: {
-    width: 50,
-    height: 50,
   },
   card: {
     width: '80%',
@@ -161,8 +142,41 @@ const styles = StyleSheet.create({
     elevation: 8, // For Android shadow
     alignItems: 'center',
   },
-  logout: {
-    color: Colors.quintery,
+   welcome: {
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  email: {
+    fontSize: 14,
+    color: '#666',
+  },
+  info: {
+    fontSize: 16,
+    textAlign: 'center',
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 10, // Abstand zwischen den Buttons
+    width: '100%',
+  },
+  button: {
+    paddingVertical: 12,
+    paddingHorizontal: 22,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 140, 
+  },
+  buttonLogin: {
+    backgroundColor: Colors.senary,
+  },
+  buttonRegister: {
+    backgroundColor: Colors.tertiary,
+  },
+  buttonText: {
+    color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,
   },

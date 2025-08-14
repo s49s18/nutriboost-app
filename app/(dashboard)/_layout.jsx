@@ -27,7 +27,7 @@ export default function DashboardLayout() {
           options={{ title: "Nutrients", tabBarIcon: ({ color, focused }) => <Ionicons name={focused ? "nutrition" : "nutrition-outline"} color={color} size={24} /> }} 
         />
         <Tabs.Screen 
-          name="home"
+          name="dashboard"
           options={{ title: "Home", tabBarIcon: ({ color, focused }) => <Ionicons name={focused ? "home" : "home-outline"} color={color} size={24} /> }} 
         />
         <Tabs.Screen 

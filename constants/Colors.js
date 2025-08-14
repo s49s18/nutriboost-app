@@ -3,7 +3,8 @@ export const Colors = {
   secondary: "#61CCAB",
   tertiary: "#ADC867",
   quartery: "#D2C747",
-  quintery: "#4BCDBE",
+  quinery: "#4BCDBE",
+  senary: "#28A745",
   warning: "#cc475a",
   
   dark: {
@@ -27,5 +28,6 @@ export const Colors = {
     uiBackground: "#d6d5e1",
     header: "purple",
     highlight: "#61CCAB",
+    classic: '#1ABC9C',
   },
 }

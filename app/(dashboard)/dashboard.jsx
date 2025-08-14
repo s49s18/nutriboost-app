@@ -10,6 +10,8 @@ import { UserContext } from '../../contexts/UserContexts';
 import ThemedLoader from '../../components/ThemedLoader';
 import { NutrientsContext } from '../../contexts/NutrientsContext';
 import Spacer from '../../components/Spacer';
+import * as Notifications from 'expo-notifications';
+import AppHeader from '../../components/AppHeader';
 
 const StartScreen = () => {
   const { user } = useContext(UserContext);
@@ -44,8 +46,35 @@ const StartScreen = () => {
    fetchRandomFact();
   }, []);
 
+  useEffect(() => {
+    const registerForPushNotificationsAsync = async () => {
+      const { status: existingStatus } = await Notifications.getPermissionsAsync();
+      let finalStatus = existingStatus;
+      if (existingStatus !== 'granted') {
+        const { status } = await Notifications.requestPermissionsAsync();
+        finalStatus = status;
+      }
+      if (finalStatus !== 'granted') {
+        alert('Failed to get push token for push notification!');
+        return;
+      }
+      // Token hier ggf. an deinen Server senden
+    };
+
+    Notifications.setNotificationHandler({
+      handleNotification: async () => ({
+        shouldShowAlert: true,
+        shouldPlaySound: false,
+        shouldSetBadge: false,
+      }),
+    });
+
+    registerForPushNotificationsAsync();
+  }, []);
+
   return (
     <ThemedView style={styles.container}>
+       <AppHeader />
       <Spacer width={20}/>
         <ThemedView style={styles.card}>
          {/* Kopfzeile */}
