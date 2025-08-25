@@ -46,11 +46,11 @@ const NutrientDetail = () => {
       )}
 
       {/* Titel */}
+      <Spacer height={10} />
       <ThemedText title style={styles.nutrientTitle}>
         {nutrient.name}
       </ThemedText>
       <ThemedText style={styles.category}>{nutrient.category}</ThemedText>
-      <Spacer height={20} />
 
       {/* Basisinfos */}
       <View style={styles.infoCard}>
@@ -61,11 +61,38 @@ const NutrientDetail = () => {
 
       <Spacer height={20} />
 
-      {/* Beschreibung */}
+      {/* Kurzbeschreibung */}
       {nutrient.short_description && (
         <>
           <ThemedText style={styles.sectionTitle}>Kurzbeschreibung</ThemedText>
           <ThemedText style={styles.text}>{nutrient.short_description}</ThemedText>
+          <Spacer height={10} />
+        </>
+      )}
+
+      {/* Lebensmittel */}
+      {nutrient.vegan_sources && (
+        <>
+          <ThemedText style={styles.sectionTitle}>Lebensmittel</ThemedText>
+          <ThemedText style={styles.text}>{nutrient.vegan_sources}</ThemedText>
+          <Spacer height={10} />
+        </>
+      )}
+
+      {/* Einnahmeempfehlungen */}
+      {nutrient.recommended_intake && (
+        <>
+          <ThemedText style={styles.sectionTitle}>Empfehlungen zur Einnahme</ThemedText>
+          <ThemedText style={styles.text}>{nutrient.recommended_intake}</ThemedText>
+          <Spacer height={10} />
+        </>
+      )}
+
+      {/* Beschreibung*/}
+      {nutrient.description && (
+        <>
+          <ThemedText style={styles.sectionTitle}>Wichtigste Informationen</ThemedText>
+          <ThemedText style={styles.text}>{nutrient.description}</ThemedText>
           <Spacer height={10} />
         </>
       )}
@@ -102,7 +129,7 @@ export default NutrientDetail;
 const styles = StyleSheet.create({
   container: { flex: 1,  },
   headerImage: { width: '100%', height: 200, borderBottomLeftRadius: 12, borderBottomRightRadius: 12 },
-  nutrientTitle: { fontSize: 28, fontWeight: 'bold', textAlign: 'center', marginTop: 15, color: Colors.primary },
+  nutrientTitle: { fontSize: 28, fontWeight: 'bold', textAlign: 'center', marginTop: 15, color: Colors.tertiary },
   category: { fontSize: 16, textAlign: 'center', color: Colors.light.iconColor },
   infoCard: {
     backgroundColor: Colors.light.background,

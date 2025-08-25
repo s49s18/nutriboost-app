@@ -12,6 +12,7 @@ import { createClient } from '@supabase/supabase-js';
 import { LineChart } from 'react-native-chart-kit';
 import { format, subDays, startOfDay } from 'date-fns';
 import { supabase } from '../../lib/supabaseClient';
+import { differenceInDays, differenceInMonths, subMonths } from 'date-fns';
 
 
 const screenWidth = Dimensions.get('window').width;
@@ -25,71 +26,97 @@ const SupplementOverviewScreen = () => {
   const [selectedNutrient, setSelectedNutrient] = useState(null);
   const [intakeData, setIntakeData] = useState(null);
   const [message, setMessage] = useState('');
+  const [timeRange, setTimeRange] = useState('7 Tage'); // '7 Tage', '30 Tage', '180 Tage', '365 Tage'
 
-  // Funktion zum Abrufen und Formatieren der Einnahmedaten aus Supabase
+  const getStartDate = () => {
+    const today = new Date();
+    switch (timeRange) {
+      case '30 Tage':
+        return subDays(today, 29);
+      case '6 Monate':
+        return subDays(today, 179);
+      case '1 Jahr':
+        return subDays(today, 364);
+      default:
+        return subDays(today, 6);
+    }
+  };
+
   const fetchAndFormatIntakeData = async (nutrientId) => {
     if (!user || !nutrientId) return;
 
     try {
-      // Hole die Daten der letzten 7 Tage
-      const sevenDaysAgo = subDays(new Date(), 6);
-      
+      const startDate = getStartDate();
+
       const { data: rawIntakes, error } = await supabase
         .from('user_nutrient_log')
         .select('*')
         .eq('user_id', user.id)
         .eq('nutrient_id', nutrientId)
-        .gte('date', format(startOfDay(sevenDaysAgo), 'yyyy-MM-dd')); // Filtern nach den letzten 7 Tagen
+        .gte('date', format(startOfDay(startDate), 'yyyy-MM-dd'));
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
-      // Initialisiere die Tageszähler für die letzten 7 Tage
-      const dailyIntakes = {};
-      const labels = [];
-      for (let i = 6; i >= 0; i--) {
-        const date = subDays(new Date(), i);
-        const dayLabel = format(date, 'EE'); // z.B. "Mo", "Di"
-        labels.push(dayLabel);
-        dailyIntakes[dayLabel] = 0;
-      }
+      let labels = [];
+      let dailyIntakes = {};
 
-      // Zähle die Einnahmen pro Tag
-      if (rawIntakes) {
+      if (timeRange === '7 Tage' || timeRange === '30 Tage') {
+        // Gruppierung nach Tagen
+        for (let i = differenceInDays(new Date(), startDate); i >= 0; i--) {
+          const date = subDays(new Date(), i);
+          const label = format(date, timeRange === '7 Tage' ? 'EE' : 'dd.MM');
+          labels.push(label);
+          dailyIntakes[label] = 0;
+        }
         rawIntakes.forEach(intake => {
-          const intakeDate = new Date(intake.date);
-          const dayLabel = format(intakeDate, 'EE');
-          if (dailyIntakes.hasOwnProperty(dayLabel)) {
-            dailyIntakes[dayLabel] += 1;
+          const label = format(new Date(intake.date), timeRange === '7 Tage' ? 'EE' : 'dd.MM');
+          if (dailyIntakes[label] !== undefined) dailyIntakes[label] += 1;
+        });
+      } else {
+        // Gruppierung nach Monaten
+        const monthsDiff = differenceInMonths(new Date(), startDate);
+        for (let i = monthsDiff; i >= 0; i--) {
+          const date = subMonths(new Date(), i);
+          const isFirst = i === monthsDiff;
+          const isLast = i === 0;
+                 
+          let label;
+          if (isFirst || isLast) {
+            // Anzeigen des Monats und des Jahres
+            label = format(date, 'MMM yy');
+          } else {
+            // Nur Monatskürzel anzeigen
+            label = format(date, 'MMM');
           }
+          labels.push(label);
+          dailyIntakes[label] = 0;
+        }
+        rawIntakes.forEach(intake => {
+          const label = format(new Date(intake.date), 'MMM yy');
+          if (dailyIntakes[label] !== undefined) dailyIntakes[label] += 1;
         });
       }
 
-      // Erstelle das Datenformat für das Diagramm
       const data = {
-        labels: labels,
+        labels,
         datasets: [
-          {
-            data: labels.map(label => dailyIntakes[label]),
-          },
+          { data: labels.map(label => dailyIntakes[label]) }
         ],
       };
-      
+
       setIntakeData(data);
-      
+
     } catch (error) {
       console.error('Fehler beim Abrufen der Einnahmedaten:', error.message);
       setMessage('Fehler beim Laden der Daten.');
     }
   };
 
-  // Effekt, um die Einnahmedaten zu laden, wenn ein Nährstoff ausgewählt wird
   useEffect(() => {
     if (selectedNutrient) {
       fetchAndFormatIntakeData(selectedNutrient.id);
     }
-  }, [selectedNutrient]);
+  }, [selectedNutrient, timeRange]);
 
   return (
     <ThemedView style={styles.container}>
@@ -118,37 +145,37 @@ const SupplementOverviewScreen = () => {
         />
       </View>
 
+      {/* Zeitraum-Buttons */}
+      <View style={styles.rangeButtonContainer}>
+        {['7 Tage', '30 Tage', '6 Monate', '1 Jahr'].map(range => (
+          <TouchableOpacity
+            key={range}
+            style={[
+              styles.rangeButton,
+              timeRange === range && styles.selectedRangeButton
+            ]}
+            onPress={() => setTimeRange(range)}
+          >
+            <Text style={[
+              styles.rangeButtonText,
+              timeRange === range && styles.selectedRangeButtonText
+            ]}>
+              {range === '7 Tage' ? '7 Tage' :
+               range === '30 Tage' ? '30 Tage' :
+               range === '6 Monate' ? '6 Monate' : '1 Jahr'}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
       <Spacer/>
 
       {/* Diagramm-Anzeige */}
       {intakeData ? (
         <View style={styles.chartContainer}>
-          <ThemedText style={styles.chartTitle}>{selectedNutrient.name} Einnahme (letzte 7 Tage)</ThemedText>
-          {/*<LineChart
-            data={intakeData}
-            width={screenWidth * 0.9} // Diagrammbreite
-            height={220}
-            chartConfig={{
-              backgroundColor: Colors.secondary,
-              backgroundGradientFrom: Colors.secondary,
-              backgroundGradientTo: Colors.secondary,
-              decimalPlaces: 0, // Keine Dezimalstellen anzeigen
-              color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-              labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-              style: {
-                borderRadius: 16
-              },
-              propsForDots: {
-                r: "6",
-                strokeWidth: "2",
-                stroke: Colors.primary,
-              }
-            }}
-            style={{
-              marginVertical: 8,
-              borderRadius: 16
-            }}
-          />*/}
+          <ThemedText style={styles.chartTitle}>
+            {selectedNutrient.name} Einnahme ({timeRange})
+          </ThemedText>
           <ThemedLineChart data={intakeData} />
         </View>
       ) : (
@@ -195,19 +222,6 @@ const styles = StyleSheet.create({
     color: '#000',
     fontWeight: 'bold',
   },
-  logButton: {
-    backgroundColor: Colors.secondary,
-    padding: 15,
-    borderRadius: 10,
-    marginTop: 20,
-    width: '80%',
-    alignItems: 'center',
-  },
-  logButtonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
   chartContainer: {
     alignItems: 'center',
     marginTop: 20,
@@ -223,5 +237,29 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 16,
     color: '#666',
-  }
+  },
+  rangeButtonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: 10,
+  },
+  rangeButton: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    marginHorizontal: 5,
+    borderRadius: 15,
+    backgroundColor: '#eee',
+  },
+  selectedRangeButton: {
+    backgroundColor: Colors.primary,
+  },
+  rangeButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333',
+  },
+  selectedRangeButtonText: {
+    color: '#fff',
+  },
 });
+
