@@ -1,4 +1,4 @@
-import { StyleSheet, View, Image, ScrollView } from 'react-native';
+import { StyleSheet, View, Image, ScrollView, Text } from 'react-native';
 import React, { useContext, useState, useEffect } from 'react';
 import { useLocalSearchParams } from 'expo-router';
 import { NutrientsContext } from '../../../contexts/NutrientsContext';
@@ -119,8 +119,8 @@ const NutrientDetail = () => {
 
 const InfoRow = ({ label, value }) => (
   <View style={styles.infoRow}>
-    <ThemedText style={styles.infoLabel}>{label}</ThemedText>
-    <ThemedText style={styles.infoValue}>{value}</ThemedText>
+    <Text style={styles.infoLabel}>{label}</Text>
+    <Text style={styles.infoValue}>{value}</Text>
   </View>
 );
 
@@ -129,7 +129,7 @@ export default NutrientDetail;
 const styles = StyleSheet.create({
   container: { flex: 1,  },
   headerImage: { width: '100%', height: 200, borderBottomLeftRadius: 12, borderBottomRightRadius: 12 },
-  nutrientTitle: { fontSize: 28, fontWeight: 'bold', textAlign: 'center', marginTop: 15, color: Colors.tertiary },
+  nutrientTitle: { fontSize: 28, fontWeight: 'bold', textAlign: 'center', marginTop: 15, color: Colors.quaternary },
   category: { fontSize: 16, textAlign: 'center', color: Colors.light.iconColor },
   infoCard: {
     backgroundColor: Colors.light.background,

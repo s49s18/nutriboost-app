@@ -1,10 +1,11 @@
 import { TextInput, useColorScheme } from 'react-native'
 import React from 'react'
 import { Colors } from '../constants/Colors';
+import { useTheme } from '../contexts/ThemeContext';
 
 const ThemedTextInput = ({ style, ...props}) => {
-  const colorScheme = useColorScheme();
-  const theme = Colors[colorScheme] ?? Colors.light;
+  const { themeName } = useTheme();
+  const theme = Colors[themeName] ?? Colors.light;
 
   return (
     <TextInput

@@ -4,11 +4,11 @@ import { Colors } from '../constants/Colors'
 import { useTheme } from '../contexts/ThemeContext';
 
 // images
-import DarkLogo from '../assets/img/nutriboost_logo_black.png'
-import LightLogo from '../assets/img/nutriboost_logo_light.png'
+import DarkLogo from '../assets/img/title_logo_dark.png'
+import LightLogo from '../assets/img/title_logo_light.png'
 
 
-const ThemedLogo = ({...props } ) => {
+const ThemedTitleLogo = ({...props } ) => {
   const { themeName } = useTheme();
   const logo = themeName === 'dark' ? DarkLogo : LightLogo
 
@@ -17,4 +17,4 @@ const ThemedLogo = ({...props } ) => {
   )
 }
 
-export default ThemedLogo
+export default ThemedTitleLogo

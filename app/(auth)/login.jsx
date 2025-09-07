@@ -66,6 +66,7 @@ export default function Login() {
                 onChangeText={setPassword}
                 value={password}
             />
+             {error && <Text style={styles.error}>{error}</Text>}
 
             <Spacer height={20} />
             <ThemedButton onPress={handleSubmit}>
@@ -76,7 +77,6 @@ export default function Login() {
               <ThemedText style={styles.link}>Passwort vergessen?</ThemedText>
             </Pressable>
             <Spacer />
-            {error && <Text style={styles.error}>{error}</Text>}
 
             <Spacer height={100} />
             <Link href="/register" replace>
@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
   error: {
       color: Colors.warning,
       padding: 10,
-      backgroundColor: '#f5c1c8',
+      backgroundColor: Colors.warningBackground,
       marginHorizontal: 10,
       borderWidth: 1,
       borderColor: Colors.warning,

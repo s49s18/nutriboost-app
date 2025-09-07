@@ -2,12 +2,13 @@ import React from 'react';
 import { StyleSheet, Dimensions, useColorScheme, View, Text } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
 import { Colors } from '../constants/Colors';
+import { useTheme } from '../contexts/ThemeContext';
 
 const screenWidth = Dimensions.get('window').width;
 
 const ThemedLineChart = ({ data }) => {
-  const colorScheme = useColorScheme();
-  const theme = colorScheme === 'dark' ? Colors.dark : Colors.light;
+  const { themeName } = useTheme();
+  const theme = themeName === 'dark' ? Colors.dark : Colors.light;
 
   const chartConfig = {
     backgroundColor: theme.uiBackground,

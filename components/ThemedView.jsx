@@ -1,10 +1,12 @@
 import { useColorScheme, View } from 'react-native'
+import { useTheme } from '../contexts/ThemeContext';
 import { Colors } from '../constants/Colors'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 const ThemedView = ({ style, safe = false, ...props }) => {
-  const colorScheme = useColorScheme()
-  const theme = Colors[colorScheme] ?? Colors.light
+  const { themeName } = useTheme();
+  const theme = Colors[themeName] ?? Colors.light;
+  const insets = useSafeAreaInsets();
 
   if (!safe) return (
     <View
@@ -12,8 +14,6 @@ const ThemedView = ({ style, safe = false, ...props }) => {
       {...props}
     />
   )
-
-  const insets = useSafeAreaInsets()
 
   return (
     <View 

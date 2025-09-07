@@ -6,13 +6,16 @@ import ThemedLogo from './ThemedLogo';
 import ThemedText from './ThemedText';
 import { UserContext } from '../contexts/UserContexts';
 import { Colors } from '../constants/Colors';
+import { useTheme } from '../contexts/ThemeContext';
 
 const AppHeader = () => {
   const { user, logout } = useContext(UserContext);
   const pathname = usePathname(); // Aktuelle Route ermitteln
+  const { themeName } = useTheme();
+  const theme = Colors[themeName] ?? Colors.light;
 
   return (
-    <ThemedView style={styles.header}>
+    <ThemedView style={[styles.header, { borderBottomColor: theme.text }]}>
       <ThemedLogo style={styles.img} />
 
       <View style={styles.headerLinks}>
@@ -37,7 +40,7 @@ const AppHeader = () => {
       {/* Nur im Dashboard extra Begrüßung */}
       {pathname === '/dashboard' && user && (
         <ThemedText style={styles.welcome}>
-          👋 Welcome, {user.profile?.firstname}
+           Willkommen, {user.profile?.firstname}
         </ThemedText>
       )}
     </ThemedView>
@@ -57,11 +60,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingVertical: 10,
+    paddingTop: 20,
     borderBottomWidth: 1,
     zIndex: 1,
   },
   img: {
-    width: 40,
+    width: 120,
     height: 40,
   },
   headerLinks: {
@@ -75,7 +79,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   logout: {
-    color: Colors.quintery,
     fontWeight: 'bold',
     fontSize: 16,
   },
@@ -83,6 +86,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: -20,
     left: 20,
+    paddingVertical: 5,
+    paddingHorizontal: 20,
     fontSize: 14,
     fontWeight: '500',
   },

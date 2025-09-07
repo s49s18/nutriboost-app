@@ -196,11 +196,106 @@ export const UserProvider = ({ children }) => {
       setLoading(false);
       return { success: false, error: err.message || 'Unbekannter Fehler' };
     }
-  }  
+  } 
 
+  const updateProfile = async (updates) => {
+  if (!user?.id) {
+    console.error("No user ID available");
+    return false;
+  }
+
+  const { data, error } = await supabase
+    .from('profiles')
+    .update(updates)
+    .eq('id', user.id)
+    .select('*');
+
+  if (error) {
+    console.error("Error updating profile:", error);
+    return false;
+  }
+
+  if (!data || data.length === 0) {
+    console.error("Update affected 0 rows - check user ID and table! ID:", user.id);
+    return false;
+  }
+
+  // Context aktualisieren
+  setUser(prev => ({ ...prev, profile: { ...prev.profile, ...updates } }));
+  return true;
+};
+
+
+/*   const updateProfile = async ({ firstname, lastname }) => {
+    if (!user?.id) {
+      console.error("No user ID available");
+      return false;
+    }
+
+    const { data, error } = await supabase
+      .from('profiles')
+      .update({ firstname, lastname })
+      .eq('id', user.id)
+      .select('*');             // sicherstellen, dass die Daten zurückkommen
+
+    if (error) {
+      console.error("Error updating profile:", error);
+      return false;
+    }
+
+    if (!data || data.length === 0) {
+      console.error("Update affected 0 rows - check user ID and table!" + user.id);
+      return false;
+    }
+
+    // Aktualisiere den Context / State
+    setUser(prev => ({ ...prev, profile: { ...prev.profile, firstname, lastname } }));
+    return true;
+  };
+ */
+  async function deleteProfile() {
+    if (!user) return { success: false, error: 'Kein Benutzer angemeldet' };
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', user.id);
+      if (error) {
+        setLoading(false);
+        return { success: false, error: error.message };
+      }
+
+      setLoading(false);
+      return { success: true };
+    } catch (err) {
+      setLoading(false);
+      return { success: false, error: err.message || 'Unbekannter Fehler' };
+    }
+  }
+
+  async function deleteUser() {
+    if (!user) return { success: false, error: 'Kein Benutzer angemeldet' };
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.deleteUser();
+
+      if (error) {
+        setLoading(false);
+        return { success: false, error: error.message };
+      }
+
+      setUser(null);
+      setLoading(false);
+      return { success: true };
+    } catch (err) {
+      setLoading(false);
+      return { success: false, error: err.message || 'Unbekannter Fehler' };
+    }
+  }
 
   return (
-    <UserContext.Provider value={{ user, login, logout, register, resetPassword, updateUser, loading }}>
+    <UserContext.Provider value={{ user, login, logout, register, resetPassword, updateUser, updateProfile, deleteProfile, deleteUser, loading }}>
       {children}
     </UserContext.Provider>
   );

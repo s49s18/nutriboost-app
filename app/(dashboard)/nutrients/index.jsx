@@ -28,7 +28,7 @@ const Nutrients = () => {
   return (
     <ThemedView style={styles.container}>
       <Spacer height={10} />
-      <ThemedHeader title={true} style={styles.pageTitle}>Nährstoffe wählen</ThemedHeader>
+      <ThemedText title={true} style={styles.pageTitle}>Nährstoffe wählen</ThemedText>
       <Spacer height={10} />
 
       <ScrollView style={styles.scrollView}>
@@ -51,7 +51,7 @@ const Nutrients = () => {
                   <FontAwesome
                     name={isTracking ? 'check-square' : 'square-o'}
                     size={24}
-                    color={isTracking ? Colors.quintery : Colors.light.iconColor}
+                    color={isTracking ? Colors.secondary : Colors.light.iconColor}
                   />
                 </TouchableOpacity>
               </TouchableOpacity>

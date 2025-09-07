@@ -58,7 +58,7 @@ const SupplementOverviewScreen = () => {
       if (error) throw error;
 
       let labels = [];
-      let dailyIntakes = {};
+      let groupedIntakes = {};
 
       if (timeRange === '7 Tage' || timeRange === '30 Tage') {
         // Gruppierung nach Tagen
@@ -66,41 +66,44 @@ const SupplementOverviewScreen = () => {
           const date = subDays(new Date(), i);
           const label = format(date, timeRange === '7 Tage' ? 'EE' : 'dd.MM');
           labels.push(label);
-          dailyIntakes[label] = 0;
+          groupedIntakes[label] = 0;
         }
+
         rawIntakes.forEach(intake => {
           const label = format(new Date(intake.date), timeRange === '7 Tage' ? 'EE' : 'dd.MM');
-          if (dailyIntakes[label] !== undefined) dailyIntakes[label] += 1;
+          if (groupedIntakes[label] !== undefined) groupedIntakes[label] += 1;
         });
+
       } else {
         // Gruppierung nach Monaten
         const monthsDiff = differenceInMonths(new Date(), startDate);
+
+        let internalLabels = [];
         for (let i = monthsDiff; i >= 0; i--) {
           const date = subMonths(new Date(), i);
-          const isFirst = i === monthsDiff;
-          const isLast = i === 0;
-                 
-          let label;
-          if (isFirst || isLast) {
-            // Anzeigen des Monats und des Jahres
-            label = format(date, 'MMM yy');
-          } else {
-            // Nur Monatskürzel anzeigen
-            label = format(date, 'MMM');
-          }
-          labels.push(label);
-          dailyIntakes[label] = 0;
+          const key = format(date, 'MMM yy');
+          internalLabels.push(key);
+          groupedIntakes[key] = 0;
         }
+
         rawIntakes.forEach(intake => {
-          const label = format(new Date(intake.date), 'MMM yy');
-          if (dailyIntakes[label] !== undefined) dailyIntakes[label] += 1;
+          const key = format(new Date(intake.date), 'MMM yy');
+          if (groupedIntakes[key] !== undefined) groupedIntakes[key] += 1;
+        });
+
+        // X-Achsen-Labels -> nur erstes/letztes mit Jahr, damit die Achse nicht überfüllt wird
+        labels = internalLabels.map((key, idx) => {
+          if (idx === 0 || idx === internalLabels.length - 1) {
+            return key; // "MMM yy"
+          }
+          return key.split(' ')[0]; // nur "MMM"
         });
       }
 
       const data = {
         labels,
         datasets: [
-          { data: labels.map(label => dailyIntakes[label]) }
+          { data: Object.values(groupedIntakes) }
         ],
       };
 
@@ -112,6 +115,7 @@ const SupplementOverviewScreen = () => {
     }
   };
 
+
   useEffect(() => {
     if (selectedNutrient) {
       fetchAndFormatIntakeData(selectedNutrient.id);
@@ -121,7 +125,7 @@ const SupplementOverviewScreen = () => {
   return (
     <ThemedView style={styles.container}>
       <Spacer height={20} />
-      <ThemedHeader title={true} style={styles.pageTitle}>Einnahme-Übersicht</ThemedHeader>
+      <ThemedText title={true} style={styles.pageTitle}>Einnahme-Übersicht</ThemedText>
       <Spacer height={20} />
 
       {/* Nährstoff-Auswahl */}
@@ -139,7 +143,10 @@ const SupplementOverviewScreen = () => {
                 selectedNutrient && selectedNutrient.id === item.id && styles.selectedNutrientPill,
               ]}
             >
-              <Text style={styles.pillText}>{item.name}</Text>
+              <Text style={[
+                styles.pillText,
+                selectedNutrient && selectedNutrient.id === item.id && styles.selectedPillText,
+              ]}>{item.name}</Text>
             </TouchableOpacity>
           )}
         />
@@ -216,7 +223,10 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   selectedNutrientPill: {
-    backgroundColor: Colors.quinery,
+    backgroundColor: Colors.secondary,
+  },
+  selectedPillText: {
+    color: '#fff',
   },
   pillText: {
     color: '#000',
@@ -251,7 +261,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#eee',
   },
   selectedRangeButton: {
-    backgroundColor: Colors.primary,
+    backgroundColor: Colors.quaternary,
   },
   rangeButtonText: {
     fontSize: 14,

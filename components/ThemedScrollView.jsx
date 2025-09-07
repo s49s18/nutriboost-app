@@ -1,10 +1,11 @@
 import { useColorScheme, ScrollView } from 'react-native'
 import { Colors } from '../constants/Colors'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useTheme } from '../contexts/ThemeContext';
 
 const ThemedScrollView = ({ style, safe = false, ...props }) => {
-  const colorScheme = useColorScheme()
-  const theme = Colors[colorScheme] ?? Colors.light
+  const { themeName } = useTheme();
+  const theme = Colors[themeName] ?? Colors.light;
 
   if (!safe) return (
     <ScrollView

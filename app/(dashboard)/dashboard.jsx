@@ -12,12 +12,16 @@ import { NutrientsContext } from '../../contexts/NutrientsContext';
 import Spacer from '../../components/Spacer';
 import * as Notifications from 'expo-notifications';
 import AppHeader from '../../components/AppHeader';
+import { format } from 'date-fns';
+import ConfettiCannon from 'react-native-confetti-cannon';
+
 
 const StartScreen = () => {
   const { user } = useContext(UserContext);
   const { allNutrients, trackedNutrients, takenToday, toggleTaken } = useContext(NutrientsContext);
   const allTaken = trackedNutrients.length > 0 && trackedNutrients.every(id => takenToday[id]);
   const trackedNutrientObjects = allNutrients.filter(n => trackedNutrients.includes(n.id));
+  const [showConfetti, setShowConfetti] = useState(false);
   const [funFact, setFunFact] = useState('');
 
   // Effekt, um einen zufälligen Fun-Fact zu laden, wenn die Komponente geladen wird
@@ -72,6 +76,14 @@ const StartScreen = () => {
     registerForPushNotificationsAsync();
   }, []);
 
+  useEffect(() => {
+    if (allTaken) {
+      setShowConfetti(true);
+      // nach ein paar Sekunden automatisch wieder ausblenden
+      setTimeout(() => setShowConfetti(false), 4000);
+    }
+  }, [allTaken]);
+
   return (
     <ThemedView style={styles.container}>
        <AppHeader />
@@ -79,7 +91,7 @@ const StartScreen = () => {
         <ThemedView style={styles.card}>
          {/* Kopfzeile */}
         <Text style={styles.date}>
-          Heute: {new Date().toLocaleDateString('at-AT')}
+          {format(new Date(), 'dd.MM.yyyy')}
         </Text>
         <Text style={styles.title}>
           Deine Nährstoffe heute
@@ -98,12 +110,12 @@ const StartScreen = () => {
               <FontAwesome
                 name={takenToday[item.id] ? 'check-square' : 'square-o'}
                 size={24}
-                color={takenToday[item.id] ? Colors.quintery : Colors.light.iconColor}
+                color={takenToday[item.id] ? Colors.secondary: Colors.light.iconColor}
               />
             </TouchableOpacity>
             <ThemedText style={styles.itemText}>
               {item.name} {'  '}
-              <ThemedText style={{ fontStyle: 'italic', color: Colors.light.text }}>
+              <ThemedText style={{ fontStyle: 'italic' }}>
                 ({takenToday[item.id] ? 'Genommen' : 'Noch nicht'})
               </ThemedText>
             </ThemedText>
@@ -118,6 +130,18 @@ const StartScreen = () => {
             Alle genommen 🎉
           </Text>
         </View>
+      )}
+
+      {/* Confetti */}
+      {showConfetti && (
+        <ConfettiCannon
+          count={200}           // wie viele Konfetti
+          origin={{x: -20, y: 0}} // Startpunkt 
+          fadeOut={true}        // Konfetti verschwinden
+          explosionSpeed={350}
+          fallSpeed={2500}
+          colors={["#00FF00", "#0000FF", "#FFD700", "#FF69B4"]} // Farben des Konfettis
+        />
       )}
 
       {/* Neuer Container für den Fun-Fact */}
@@ -137,26 +161,25 @@ export default StartScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    //padding: 20,
     alignItems: 'center',
-   // backgroundColor: Colors.light.background,
   },
   card: {
     width: '100%',
-    backgroundColor: '#e6e6fa', // Light purple background
-    borderRadius: 10,
+    backgroundColor: Colors.neutral.uiBackground,
     padding: 25,
-    marginVertical: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 8, // For Android shadow
+    marginBottom: 20,
+    marginTop: 40,
+    //shadowColor: '#000',
+    //shadowOffset: { width: 0, height: 4 },
+    //shadowOpacity: 0.1,
+    //shadowRadius: 5,
+    elevation: 4, // For Android shadow
     alignItems: 'center',
   },
   date: {
     fontWeight: 'bold',
-    fontSize: 16,
+    fontSize: 23,
     marginBottom: 5,
   },
   title: {
@@ -175,7 +198,7 @@ const styles = StyleSheet.create({
   successBox: {
     marginTop: 30,
     padding: 15,
-    backgroundColor: Colors.quintery,
+    backgroundColor: Colors.tertiary,
     borderRadius: 10,
     alignItems: 'center',
   },
