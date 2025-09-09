@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { useContext } from 'react';
 import { UserContext } from '../contexts/UserContexts';
+import { ColorContext } from '../contexts/ColorContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 // themed components
@@ -22,6 +23,7 @@ const Home = () => {
   const imageUrl2 = 'https://yekfgrbbsvfimdaokldr.supabase.co/storage/v1/object/sign/assets/header2%20(1).jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9lM2I3MTU2ZC0zZTliLTQ4ZDAtOGQwMS02OWIyODMxOTk0MzYiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJhc3NldHMvaGVhZGVyMiAoMSkuanBnIiwiaWF0IjoxNzU1MTgyMzMyLCJleHAiOjE3ODY3MTgzMzJ9.UI-keEYYrilIrtRUlp4oKSRPi8p2qlAzTAs-ZfaTAcI'
 
   const { user } = useContext(UserContext);
+  const { colors } = useContext(ColorContext);
   const router = useRouter();
 
   useEffect(() => {
@@ -67,10 +69,10 @@ const Home = () => {
                 </Text>
                 <Spacer height={15} />
                 <View style={styles.buttonRow}>
-                  <AnimatedLinkButton href="/register" style={[styles.button, styles.buttonRegister]}>
+                  <AnimatedLinkButton href="/register" style={[styles.button, { backgroundColor: colors.quinary }]}>
                     <Text style={styles.buttonText}>Register</Text>
                   </AnimatedLinkButton>
-                  <AnimatedLinkButton href="/login" style={[styles.button, styles.buttonLogin]}>
+                  <AnimatedLinkButton href="/login" style={[styles.button, { backgroundColor: colors.senary }]}>
                     <Text style={styles.buttonText}>Login</Text>
                   </AnimatedLinkButton>
                 </View>
@@ -126,9 +128,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     width: '85%',
     color: '#555',
+    fontFamily: 'Montserrat',
+    fontWeight: '500',
   },
   bodyText: {
     fontSize: 22,
+    fontFamily: 'Montserrat',
   },
   footerText: {
     fontSize: 16,
@@ -174,12 +179,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     width: 140, 
-  },
-  buttonLogin: {
-    backgroundColor: Colors.senary,
-  },
-  buttonRegister: {
-    backgroundColor: Colors.quinary,
   },
   buttonText: {
     color: '#fff',

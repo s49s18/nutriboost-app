@@ -6,6 +6,13 @@ import { UserProvider } from '../contexts/UserContexts'
 import { NutrientsProvider } from '../contexts/NutrientsContext'
 import AppHeader from '../components/AppHeader';
 import { ThemeProvider, useTheme } from '../contexts/ThemeContext';
+import { ColorProvider } from '../contexts/ColorContext';
+import { useFonts } from 'expo-font';
+import { useEffect } from 'react';
+import * as SplashScreen from 'expo-splash-screen';
+
+// Verhindert das automatische Ausblenden des Splash Screens
+SplashScreen.preventAutoHideAsync();
 
 const AppWrapper = () => {
   // useTheme hier funktioniert, weil wir innerhalb von ThemeProvider sind
@@ -31,12 +38,32 @@ const AppWrapper = () => {
 };
 
 const RootLayout = () => {
+  // Fonts werden geladen
+  const [fontsLoaded] = useFonts({
+    'Montserrat': require('../assets/fonts/Montserrat-VariableFont_wght.ttf'),
+    //'MyFont-Bold': require('../assets/fonts/MyFont-Bold.ttf'),
+  });
+
+  // Zeige den Splash Screen, bis die Fonts geladen sind
+  useEffect(() => {
+    if (fontsLoaded) {
+      SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded]);
+
+  // Wenn Fonts noch nicht geladen sind, render nichts
+  if (!fontsLoaded) {
+    return null;
+  }
+
   return (
     <ThemeProvider>
       <UserProvider>
+        <ColorProvider>
         <NutrientsProvider>
           <AppWrapper />
         </NutrientsProvider>
+        </ColorProvider>
       </UserProvider>
     </ThemeProvider>
   );

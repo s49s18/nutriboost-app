@@ -13,6 +13,7 @@ import * as Notifications from 'expo-notifications';
 import { supabase } from '../../lib/supabaseClient';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { format } from 'date-fns';
+import { ColorContext } from "../../contexts/ColorContext";
 
 const days = [
   { id: 1, label: "Mo" },
@@ -27,6 +28,7 @@ const days = [
 const ReminderScreen = () => {
   const { user } = useContext(UserContext);
   const { allNutrients, trackedNutrients } = useContext(NutrientsContext);
+  const { colors } = useContext(ColorContext);
 
   const trackedNutrientObjects = allNutrients.filter(n => trackedNutrients.includes(n.id));
 
@@ -77,17 +79,17 @@ const ReminderScreen = () => {
         return;
       }
 
-       // Überprüfen, ob bereits eine Erinnerung für diesen Nährstoff existiert
+      // Überprüfen, ob bereits eine Erinnerung für diesen Nährstoff existiert
       const existingReminder = reminders.find(r => r.nutrient_id === selectedNutrient.id);
       if (existingReminder) {
         setMessage('Für diesen Nährstoff ist bereits eine Erinnerung gesetzt. Bitte lösche diese zuerst.');
         return;
       }
 
-      let identifiers = [];
+      let notificationId;
 
       if (frequency === "daily") {
-        const id = await Notifications.scheduleNotificationAsync({
+        notificationId = await Notifications.scheduleNotificationAsync({
           content: {
             title: "Erinnerung",
             body: `Vergiss nicht, ${selectedNutrient.name} zu nehmen!`,
@@ -98,40 +100,38 @@ const ReminderScreen = () => {
             repeats: true,
           },
         });
-        identifiers.push(id);
       } else {
-        for (const day of selectedDays) {
-          const id = await Notifications.scheduleNotificationAsync({
-            content: {
-              title: "Erinnerung",
-              body: `Vergiss nicht, ${selectedNutrient.name} zu nehmen!`,
-            },
-            trigger: {
-              weekday: day,
-              hour: selectedDate.getHours(),
-              minute: selectedDate.getMinutes(),
-              repeats: true,
-            },
-          });
-          identifiers.push(id);
-        }
+        // Für wöchentliche Erinnerungen: nur die erste ausgewählte Woche speichern
+        const firstDay = selectedDays[0];
+        notificationId = await Notifications.scheduleNotificationAsync({
+          content: {
+            title: "Erinnerung",
+            body: `Vergiss nicht, ${selectedNutrient.name} zu nehmen!`,
+          },
+          trigger: {
+            weekday: firstDay,
+            hour: selectedDate.getHours(),
+            minute: selectedDate.getMinutes(),
+            repeats: true,
+          },
+        });
       }
 
+      // Reminder in Supabase speichern (nur eine ID)
       const { error } = await supabase
         .from('reminders')
         .insert({
           user_id: user.id,
           nutrient_id: selectedNutrient.id,
           reminder_time: format(selectedDate, 'HH:mm'),
-          notification_id: JSON.stringify(identifiers),
+          notification_id: notificationId, // 🔹 direkt als String
           frequency,
           days_of_week: frequency === "weekly" ? JSON.stringify(selectedDays) : null,
         });
 
       if (error) {
-        for (const id of identifiers) {
-          await Notifications.cancelScheduledNotificationAsync(id);
-        }
+        // Notification wieder löschen, falls DB-Insert fehlschlägt
+        await Notifications.cancelScheduledNotificationAsync(notificationId);
         throw error;
       }
 
@@ -148,15 +148,15 @@ const ReminderScreen = () => {
     }
   };
 
-  const deleteReminder = async (reminderId, notificationIds) => {
+
+  const deleteReminder = async (reminderId, notificationId) => {
     try {
-      if (notificationIds) {
-        const ids = JSON.parse(notificationIds);
-        for (const id of ids) {
-          await Notifications.cancelScheduledNotificationAsync(id);
-        }
+      if (notificationId) {
+        // Direkt die Notification abbrechen
+        await Notifications.cancelScheduledNotificationAsync(notificationId);
       }
 
+      // Reminder aus Supabase löschen
       const { error } = await supabase
         .from('reminders')
         .delete()
@@ -164,6 +164,7 @@ const ReminderScreen = () => {
 
       if (error) throw error;
 
+      // Lokalen State aktualisieren
       fetchReminders();
       setMessage('Erinnerung erfolgreich gelöscht!');
     } catch (error) {
@@ -171,6 +172,7 @@ const ReminderScreen = () => {
       setMessage('Fehler beim Löschen der Erinnerung.');
     }
   };
+
 
   const handleTimeChange = (event, selected) => {
     setShowTimePicker(Platform.OS === 'ios');
@@ -219,7 +221,7 @@ const ReminderScreen = () => {
                     onPress={() => setSelectedNutrient(item)}
                     style={[
                       styles.nutrientPill,
-                      selectedNutrient && selectedNutrient.id === item.id && styles.selectedNutrientPill,
+                      selectedNutrient && selectedNutrient.id === item.id && { backgroundColor: colors.secondary },
                     ]}
                   >
                     <Text style={[
@@ -259,7 +261,7 @@ const ReminderScreen = () => {
               <ThemedText style={styles.sectionTitle}>3. Häufigkeit:</ThemedText>
               <View style={styles.frequencyContainer}>
                 <TouchableOpacity
-                  style={[styles.frequencyPill, frequency === "daily" && styles.selectedFrequencyPill]}
+                  style={[styles.frequencyPill, frequency === "daily" && {backgroundColor: colors.secondary}]}
                   onPress={() => setFrequency("daily")}
                 >
                   <Text style={[
@@ -270,7 +272,7 @@ const ReminderScreen = () => {
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={[styles.frequencyPill, frequency === "weekly" && styles.selectedFrequencyPill]}
+                  style={[styles.frequencyPill, frequency === "weekly" && {backgroundColor: colors.secondary}]}
                   onPress={() => setFrequency("weekly")}
                 >
                   <Text style={[
@@ -293,7 +295,7 @@ const ReminderScreen = () => {
                       key={d.id}
                       style={[
                         styles.dayPill,
-                        selectedDays.includes(d.id) && styles.selectedDayPill,
+                        selectedDays.includes(d.id) && { backgroundColor: colors.secondary },
                       ]}
                       onPress={() => toggleDay(d.id)}
                     >
@@ -310,7 +312,7 @@ const ReminderScreen = () => {
             )}
 
             {/* Speichern */}
-            <TouchableOpacity onPress={saveReminder} style={styles.saveButton}>
+            <TouchableOpacity onPress={saveReminder} style={[styles.saveButton, { backgroundColor: colors.quaternary }]}>
               <Text style={styles.saveButtonText}>Erinnerung speichern</Text>
             </TouchableOpacity>
 
@@ -367,8 +369,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     marginRight: 10,
   },
-  selectedNutrientPill: { backgroundColor: Colors.secondary },
-
   // Uhrzeit
   timePill: { 
     backgroundColor: '#eee',
@@ -391,8 +391,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     marginHorizontal: 6,
   },
-  selectedFrequencyPill: { backgroundColor: Colors.secondary },
-
   // Wochentage
   daysContainer: { flexDirection: "row", flexWrap: "wrap", justifyContent: "center" },
   dayPill: { 
@@ -402,11 +400,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     margin: 4,
   },
-  selectedDayPill: { backgroundColor: Colors.secondary },
-
   // Save-Button
   saveButton: { 
-    backgroundColor: Colors.quaternary,
     padding: 15,
     borderRadius: 10,
     marginTop: 20,

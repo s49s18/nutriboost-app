@@ -8,10 +8,12 @@ import ThemedScrollView from "../../../components/ThemedScrollView";
 import Spacer from "../../../components/Spacer";
 import { Colors } from '../../../constants/Colors';
 import ThemedLoader from '../../../components/ThemedLoader';
+import { ColorContext } from '../../../contexts/ColorContext';
 
 const NutrientDetail = () => {
   const { id } = useLocalSearchParams();
   const { fetchNutrientById } = useContext(NutrientsContext);
+  const { colors } = useContext(ColorContext);
 
   const [nutrient, setNutrient] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -47,7 +49,7 @@ const NutrientDetail = () => {
 
       {/* Titel */}
       <Spacer height={10} />
-      <ThemedText title style={styles.nutrientTitle}>
+      <ThemedText title style={[styles.nutrientTitle, { color: colors.quaternary }]}>
         {nutrient.name}
       </ThemedText>
       <ThemedText style={styles.category}>{nutrient.category}</ThemedText>
@@ -129,7 +131,7 @@ export default NutrientDetail;
 const styles = StyleSheet.create({
   container: { flex: 1,  },
   headerImage: { width: '100%', height: 200, borderBottomLeftRadius: 12, borderBottomRightRadius: 12 },
-  nutrientTitle: { fontSize: 28, fontWeight: 'bold', textAlign: 'center', marginTop: 15, color: Colors.quaternary },
+  nutrientTitle: { fontSize: 28, fontWeight: 'bold', textAlign: 'center', marginTop: 15},
   category: { fontSize: 16, textAlign: 'center', color: Colors.light.iconColor },
   infoCard: {
     backgroundColor: Colors.light.background,

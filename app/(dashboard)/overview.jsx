@@ -13,6 +13,7 @@ import { LineChart } from 'react-native-chart-kit';
 import { format, subDays, startOfDay } from 'date-fns';
 import { supabase } from '../../lib/supabaseClient';
 import { differenceInDays, differenceInMonths, subMonths } from 'date-fns';
+import { ColorContext } from "../../contexts/ColorContext";
 
 
 const screenWidth = Dimensions.get('window').width;
@@ -20,6 +21,7 @@ const screenWidth = Dimensions.get('window').width;
 const SupplementOverviewScreen = () => {
   const { user } = useContext(UserContext);
   const { allNutrients, trackedNutrients } = useContext(NutrientsContext);
+  const { colors } = useContext(ColorContext);
 
   const trackedNutrientObjects = allNutrients.filter(n => trackedNutrients.includes(n.id));
 
@@ -140,7 +142,7 @@ const SupplementOverviewScreen = () => {
               onPress={() => setSelectedNutrient(item)}
               style={[
                 styles.nutrientPill,
-                selectedNutrient && selectedNutrient.id === item.id && styles.selectedNutrientPill,
+                selectedNutrient && selectedNutrient.id === item.id && { backgroundColor: colors.secondary },
               ]}
             >
               <Text style={[
@@ -159,7 +161,7 @@ const SupplementOverviewScreen = () => {
             key={range}
             style={[
               styles.rangeButton,
-              timeRange === range && styles.selectedRangeButton
+              timeRange === range && {backgroundColor: colors.quaternary}
             ]}
             onPress={() => setTimeRange(range)}
           >
@@ -222,9 +224,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     marginRight: 10,
   },
-  selectedNutrientPill: {
-    backgroundColor: Colors.secondary,
-  },
   selectedPillText: {
     color: '#fff',
   },
@@ -259,9 +258,6 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
     borderRadius: 15,
     backgroundColor: '#eee',
-  },
-  selectedRangeButton: {
-    backgroundColor: Colors.quaternary,
   },
   rangeButtonText: {
     fontSize: 14,

@@ -14,6 +14,7 @@ import * as Notifications from 'expo-notifications';
 import AppHeader from '../../components/AppHeader';
 import { format } from 'date-fns';
 import ConfettiCannon from 'react-native-confetti-cannon';
+import { ColorContext } from '../../contexts/ColorContext';
 
 
 const StartScreen = () => {
@@ -23,6 +24,7 @@ const StartScreen = () => {
   const trackedNutrientObjects = allNutrients.filter(n => trackedNutrients.includes(n.id));
   const [showConfetti, setShowConfetti] = useState(false);
   const [funFact, setFunFact] = useState('');
+  const { colors } = useContext(ColorContext);
 
   // Effekt, um einen zufälligen Fun-Fact zu laden, wenn die Komponente geladen wird
   useEffect(() => {
@@ -110,7 +112,7 @@ const StartScreen = () => {
               <FontAwesome
                 name={takenToday[item.id] ? 'check-square' : 'square-o'}
                 size={24}
-                color={takenToday[item.id] ? Colors.secondary: Colors.light.iconColor}
+                color={takenToday[item.id] ? colors.secondary : Colors.light.iconColor}
               />
             </TouchableOpacity>
             <ThemedText style={styles.itemText}>
@@ -125,7 +127,7 @@ const StartScreen = () => {
 
       {/* Button "Alle genommen" */}
       {allTaken && (
-        <View style={styles.successBox}>
+        <View style={[styles.successBox, {backgroundColor: colors.tertiary}]}>
           <Text style={styles.successText}>
             Alle genommen 🎉
           </Text>
@@ -198,7 +200,6 @@ const styles = StyleSheet.create({
   successBox: {
     marginTop: 30,
     padding: 15,
-    backgroundColor: Colors.tertiary,
     borderRadius: 10,
     alignItems: 'center',
   },

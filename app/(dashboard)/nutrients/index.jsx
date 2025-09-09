@@ -12,10 +12,12 @@ import ThemedHeader from '../../../components/ThemedHeader';
 import Spacer from '../../../components/Spacer';
 import ThemedLoader from '../../../components/ThemedLoader';
 import { Colors } from '../../../constants/Colors';
+import { ColorContext } from '../../../contexts/ColorContext';
 
 const Nutrients = () => {
   const { user } = useContext(UserContext);
   const { allNutrients, trackedNutrients, toggleTrackedNutrient, loadingTracked, loadingAll} = useContext(NutrientsContext);
+  const { colors } = useContext(ColorContext);
 
     if (loadingAll || loadingTracked) {
     return (
@@ -51,7 +53,7 @@ const Nutrients = () => {
                   <FontAwesome
                     name={isTracking ? 'check-square' : 'square-o'}
                     size={24}
-                    color={isTracking ? Colors.secondary : Colors.light.iconColor}
+                    color={isTracking ? colors.secondary : Colors.light.iconColor}
                   />
                 </TouchableOpacity>
               </TouchableOpacity>

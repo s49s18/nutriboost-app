@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useState } from 'react';
 import { supabase } from '../../lib/supabaseClient';
 import { Link } from 'expo-router';
 
@@ -13,15 +13,21 @@ import { View, Text, Switch, StyleSheet, TouchableOpacity, Alert, Button } from 
 import { useTheme} from "../../contexts/ThemeContext";
 import EditProfileModal from '../../components/EditProfileModal';
 import ChangePasswordModal from '../../components/ChangePasswordModal';
-import { MaterialIcons } from '@expo/vector-icons'; 
+import { MaterialIcons } from '@expo/vector-icons';
+import ColorOverviewModal from "../../components/ColorOverviewModal";
+import { ColorContext } from "../../contexts/ColorContext";
 
 const Profile = () => {
   const { user, updateProfile, updateUser, deleteUser, deleteProfile } = useContext(UserContext);
   const { allNutrients, trackedNutrients } = useContext(NutrientsContext);
   const { themeName, toggleTheme } = useTheme();
   const theme = themeName === "light" ? Colors.light : Colors.dark;
+  // Modalpages states visible or not
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isPWModalVisible, setIsPWModalVisible] = useState(false);
+  const { colors } = useContext(ColorContext);
+  const [overviewVisible, setOverviewVisible] = useState(false);
+
 
   // Nährstoffnamen der getrackten Nährstoffe
   const trackedNames = trackedNutrients
@@ -62,7 +68,7 @@ const Profile = () => {
     <ThemedView style={styles.container}>
       <View style={styles.content}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-          <ThemedText style={[styles.headerText, { color: Colors.secondary }]} title={true}>
+          <ThemedText style={[styles.headerText, { color: colors.secondary }]} title={true}>
             My Profile
           </ThemedText>
           <TouchableOpacity onPress={() => setIsModalVisible(true)}>
@@ -140,7 +146,7 @@ const Profile = () => {
           {/* Zeigt einen Link nur an, wenn der Benutzer noch keine Nährstoffe hat */}
           {trackedNutrients.length === 0 && (
             <Link href="/nutrients" style={styles.emptyStateLink}>
-              <ThemedText style={styles.emptyStateText}>
+              <ThemedText style={[styles.emptyStateText, { color: colors.primary }]}>
                 Time to start tracking some nutritions ...
               </ThemedText>
             </Link>
@@ -155,10 +161,36 @@ const Profile = () => {
           <Switch
             value={themeName === "dark"}
             onValueChange={toggleTheme}
-            trackColor={{ false: "#767577", true: Colors.primary }}
+            trackColor={{ false: "#767577", true: colors.primary }}
             thumbColor={themeName === "dark" ? "#fff" : "#f4f3f4"}
           />
         </View>
+        {/* Color Picker Modal */}
+        {/* Button zum Öffnen */}
+        <TouchableOpacity onPress={() => setOverviewVisible(true)} style={styles.settingRow}>
+          <MaterialIcons name="palette" size={22} color={colors.primary} />
+          <Text style={[styles.settingText, { color: colors.text }]}>Farben anpassen</Text>
+        </TouchableOpacity>
+
+        {/* OverviewModal */}
+          <ColorOverviewModal
+            visible={overviewVisible}
+            onClose={() => setOverviewVisible(false)}
+          />
+
+{/* <TouchableOpacity onPress={() => setIsColorModalVisible(true)} style={styles.settingRow}>
+          <MaterialIcons name="palette" size={22} />
+          <Text style={[styles.settingText, { color: colors.text }]}>Farben anpassen</Text>
+        </TouchableOpacity>
+        <ColorModal
+  visible={isColorModalVisible}
+  onClose={() => setIsColorModalVisible(false)}
+  initialColors={Colors.light} // oder aktuelle User-Farben
+  onSave={(newColors) => {
+    console.log("Neue Farben:", newColors);
+    // z. B. in UserContext oder AsyncStorage speichern
+  }}
+/>  */}
       </View>
       
       {/* Danger Zone ganz unten rechts */}
@@ -212,7 +244,6 @@ const styles = StyleSheet.create({
   emptyStateText: {
     fontSize: 14,
     fontStyle: 'italic',
-    color: Colors.primary, // Verwende die primäre Farbe, um es als Link zu kennzeichnen
     textDecorationLine: 'underline',
   },
   switchRow: {
@@ -241,7 +272,6 @@ chip: {
   paddingHorizontal: 10,
   paddingVertical: 5,
   borderRadius: 15,
-  backgroundColor: Colors.primary,
   color: '#fff',
   fontSize: 12,
 },
