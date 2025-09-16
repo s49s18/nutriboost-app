@@ -49,11 +49,11 @@ const NutrientDetail = () => {
 
       {/* Titel */}
       <Spacer height={10} />
-      <ThemedText title style={[styles.nutrientTitle, { color: colors.quaternary }]}>
+      <ThemedText title style={[styles.nutrientTitle, { color: colors.secondary }]}>
         {nutrient.name}
       </ThemedText>
-      <ThemedText style={styles.category}>{nutrient.category}</ThemedText>
-
+      <ThemedText style={[styles.category, colors.iconColor]}>{nutrient.category}</ThemedText>
+      <Spacer height={5} />
       {/* Basisinfos */}
       <View style={styles.infoCard}>
         <InfoRow label="Min. tägl. Bedarf" value={`${nutrient.min_daily} ${nutrient.unit}`} />
@@ -61,7 +61,7 @@ const NutrientDetail = () => {
         {nutrient.sources && <InfoRow label="Hauptquellen" value={nutrient.sources} />}
       </View>
 
-      <Spacer height={20} />
+      <Spacer height={5} />
 
       {/* Kurzbeschreibung */}
       {nutrient.short_description && (
@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
   container: { flex: 1,  },
   headerImage: { width: '100%', height: 200, borderBottomLeftRadius: 12, borderBottomRightRadius: 12 },
   nutrientTitle: { fontSize: 28, fontWeight: 'bold', textAlign: 'center', marginTop: 15},
-  category: { fontSize: 16, textAlign: 'center', color: Colors.light.iconColor },
+  category: { fontSize: 14, textAlign: 'center'},
   infoCard: {
     backgroundColor: Colors.light.background,
     borderRadius: 12,
@@ -141,7 +141,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 6,
     elevation: 3,
-    marginHorizontal: 15
+    marginHorizontal: 15,
+    marginTop: 5,
   },
   infoRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6 },
   infoLabel: { fontWeight: 'bold', fontSize: 15 },

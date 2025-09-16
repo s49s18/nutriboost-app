@@ -32,16 +32,12 @@ const ColorModal = ({ visible, onClose, onSave, initialColors }) => {
     >
       <View style={styles.overlay}>
         <View style={[styles.modalContainer, { backgroundColor: theme.uiBackground }]}>
-          <Text style={[styles.title, { color: theme.text }]}>Farben anpassen 🎨</Text>
+          <Text style={[styles.title, { color: theme.bwturned}]}>Farben anpassen  🎨</Text>
 
           <ScrollView style={{ flex: 1 }}>
             {Object.keys(initialColors).map((key) => (
               <View key={key} style={styles.colorRow}>
-                <Text style={[styles.label, { color: theme.text }]}>{key}</Text>
-
-                {/* Live-Update des Pickers */}
-                <View style={[styles.previewBox, { backgroundColor: tempColors[key] }]} />
-
+                {/* <Text style={[styles.label, { color: theme.text }]}>{key}</Text> */}
                 <ColorPicker
                   color={tempColors[key]}
                   onColorChange={(color) => handleColorChange(key, color)}
@@ -52,6 +48,10 @@ const ColorModal = ({ visible, onClose, onSave, initialColors }) => {
                   swatches={false}
                   style={styles.picker}
                 />
+
+                <Text style={[styles.label, { color: theme.text }]}>{key}</Text>
+                {/* Live-Update des Pickers */}
+                <View style={[styles.previewBox, { backgroundColor: tempColors[key] }]} />
               </View>
             ))}
           </ScrollView>
@@ -77,9 +77,9 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     width: "90%",
-    height: "80%",
+    height: "60%",
     borderRadius: 15,
-    padding: 15,
+    padding: 20,
   },
   title: {
     fontSize: 20,

@@ -3,7 +3,6 @@ import { View, StyleSheet, TouchableOpacity, FlatList, Text, Platform, Alert } f
 import ThemedText from '../../components/ThemedText';
 import ThemedView from '../../components/ThemedView';
 import ThemedHeader from '../../components/ThemedHeader';
-import { Colors } from '../../constants/Colors';
 import { UserContext } from '../../contexts/UserContexts';
 import { NutrientsContext } from '../../contexts/NutrientsContext';
 import Spacer from '../../components/Spacer';
@@ -14,6 +13,8 @@ import { supabase } from '../../lib/supabaseClient';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { format } from 'date-fns';
 import { ColorContext } from "../../contexts/ColorContext";
+import { useTheme } from '../../contexts/ThemeContext';
+import { Colors } from '../../constants/Colors';
 
 const days = [
   { id: 1, label: "Mo" },
@@ -29,6 +30,8 @@ const ReminderScreen = () => {
   const { user } = useContext(UserContext);
   const { allNutrients, trackedNutrients } = useContext(NutrientsContext);
   const { colors } = useContext(ColorContext);
+  const { themeName } = useTheme();
+  const theme = Colors[themeName] ?? Colors.light;
 
   const trackedNutrientObjects = allNutrients.filter(n => trackedNutrients.includes(n.id));
 
@@ -335,13 +338,13 @@ const ReminderScreen = () => {
                       : "(täglich)"}
                   </ThemedText>
                   <TouchableOpacity onPress={() => deleteReminder(reminder.id, reminder.notification_id)} style={styles.deleteButton}>
-                    <FontAwesome name="trash" size={18} color="black" />
+                    <FontAwesome name="trash" size={18} color={theme.iconColor}/>
                   </TouchableOpacity>
                 </View>
               ) : (
                 <View style={styles.reminderStatusContainer}>
                   <ThemedText style={styles.reminderItemStatus}> Keine </ThemedText>
-                  <FontAwesome name="clock-o" size={18} color="#999" />
+                  <FontAwesome name="clock-o" size={18} color={theme.iconColor} />
                 </View>
               )}
             </View>

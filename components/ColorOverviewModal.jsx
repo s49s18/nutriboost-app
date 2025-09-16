@@ -1,13 +1,22 @@
 import React, { useState, useContext, useEffect } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, Modal } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, Modal, Alert, Button} from "react-native";
+import ThemedText from "../components/ThemedText"
 import { ColorContext } from "../contexts/ColorContext";
 import ColorModal from "./ColorModal";
+import ConfirmModal from "./ConfirmModal"
+import { MaterialIcons } from '@expo/vector-icons';
+import { useTheme } from '../contexts/ThemeContext';
+import { Colors } from '../constants/Colors';
 
 const ColorOverviewModal = ({ visible, onClose }) => {
-  const { colors, updateColors } = useContext(ColorContext);
+  const { colors, updateColors, resetColors } = useContext(ColorContext);
+  const { themeName } = useTheme();
+  const theme = themeName === 'light' ? Colors.light : Colors.dark;
   const [selectedColorKey, setSelectedColorKey] = useState(null);
   const [pickerVisible, setPickerVisible] = useState(false);
 
+  const [confirmVisible, setConfirmVisible] = useState(false);
+  const handleColorResetPress = () => setConfirmVisible(true);
 
   const handleColorPress = (key) => {
     setSelectedColorKey(key);
@@ -22,11 +31,27 @@ const ColorOverviewModal = ({ visible, onClose }) => {
 
   const handlePickerClose = () => setPickerVisible(false);
 
+  /* const handleColorResetPress = () => {
+    Alert.alert(
+      "Farben zurücksetzen",
+      "Bist du sicher, dass du deine Farben auf die Standardwerte zurücksetzen möchtest?",
+      [
+        { text: "Abbrechen", style: "cancel" },
+        { 
+          text: "Zurücksetzen", 
+          style: "destructive", 
+          onPress: () => resetColors() 
+        }
+      ]
+    );
+  }; */
+
   return (
+    <>
     <Modal visible={visible} animationType="slide" transparent={true}>
       <View style={styles.overlay}>
-        <View style={styles.modalContainer}>
-          <Text style={styles.title}>Farben bearbeiten 🎨</Text>
+        <View style={[styles.modalContainer, { backgroundColor: theme.uiBackground }]}>
+          <Text style={[styles.title, { color: theme.bwturned }]}>Farben bearbeiten 🎨</Text>
 
           <FlatList
             style={{ flex: 1 }}
@@ -43,10 +68,15 @@ const ColorOverviewModal = ({ visible, onClose }) => {
               </TouchableOpacity>
             )}
           />
-
-          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <Text style={styles.closeText}>Schließen</Text>
+          {/* Farben zurücksetzen */}
+          <TouchableOpacity onPress={handleColorResetPress} style={styles.settingRow}>
+            <MaterialIcons name="lock-reset" size={22} color={theme.iconColor}/>
+            <Text style={[styles.settingText, { color: theme.text }]}>Farben zurücksetzen</Text>
           </TouchableOpacity>
+
+          <View style={styles.buttonRow}>
+           <Button title="Schließen" onPress={onClose} color={theme.uiBackground} />
+          </View>
 
           {selectedColorKey && (
             <ColorModal
@@ -59,6 +89,18 @@ const ColorOverviewModal = ({ visible, onClose }) => {
         </View>
       </View>
     </Modal>
+
+    {/* ConfirmModal jetzt eigenständig = liegt drüber */}
+    <ConfirmModal
+      visible={confirmVisible}
+      onCancel={() => setConfirmVisible(false)}
+      onConfirm={() => {
+        resetColors();
+        setConfirmVisible(false);
+      }}
+      colors={theme}
+    />
+  </>
   );
 };
 
@@ -73,10 +115,9 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     width: "90%",
-    height: "80%",
-    backgroundColor: "#fff",
+    height: "56%",
     borderRadius: 15,
-    padding: 15,
+    padding: 22,
   },
   title: {
     fontSize: 22,
@@ -86,9 +127,9 @@ const styles = StyleSheet.create({
   },
   colorBox: {
     flex: 1,
-    height: 100,
+    height: 70,
     margin: 10,
-    borderRadius: 10,
+    borderRadius: 5,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -100,16 +141,19 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 2,
   },
-  closeButton: {
-    marginTop: 10,
-    alignSelf: "center",
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    backgroundColor: "#ccc",
-    borderRadius: 10,
+  settingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 18,
   },
-  closeText: {
-    fontWeight: "bold",
-    fontSize: 16,
+  settingText: {
+    marginLeft: 10,
+    fontSize: 15,
+  },
+   buttonRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 15,
   },
 });

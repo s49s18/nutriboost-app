@@ -57,15 +57,15 @@ const RootLayout = () => {
   }
 
   return (
-    <ThemeProvider>
       <UserProvider>
+        <ThemeProvider>
         <ColorProvider>
         <NutrientsProvider>
           <AppWrapper />
         </NutrientsProvider>
         </ColorProvider>
+        </ThemeProvider>
       </UserProvider>
-    </ThemeProvider>
   );
 };
 

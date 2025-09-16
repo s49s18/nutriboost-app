@@ -39,8 +39,21 @@ export const ColorProvider = ({ children }) => {
     if (error) console.error("Fehler beim Speichern:", error);
   };
 
+  const resetColors = async () => {
+    try {
+      setCustomColors({}); // Lokalen State zurücksetzen
+      const { error } = await supabase
+        .from("profiles")
+        .update({ colors: null }) // Datenbank zurücksetzen
+        .eq("id", user.id);
+
+      if (error) throw error;
+    } catch (err) {
+      console.error("Fehler beim Zurücksetzen der Farben:", err);
+    }
+  };
+
   const mergedColors = { ...Colors, ...customColors };
-  console.log("mergedColors:", mergedColors);
 
   const editableKeys = ["primary","secondary","tertiary","quaternary","quinary","senary"];
 
@@ -49,11 +62,9 @@ export const ColorProvider = ({ children }) => {
     return acc;
     }, {});
 
-    console.log("Editable Farben:", editableColors); // sollte jetzt Werte enthalten
-
 
   return (
-    <ColorContext.Provider value={{ mergedColors, updateColors, loading, colors: editableColors }}>
+    <ColorContext.Provider value={{ mergedColors, updateColors, resetColors, loading, colors: editableColors }}>
       {children}
     </ColorContext.Provider>
   );

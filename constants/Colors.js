@@ -1,6 +1,6 @@
 export const Colors = {
   // Grundfarben für UI-Elemente und Status
-  primary: "#4CAF50", // Dunkles, sattes Grün. Stellt Gesundheit, Natur und Frische dar.
+  primary: "#49a090", // Dunkles, sattes Grün. Stellt Gesundheit, Natur und Frische dar.
   secondary: "#FFC107", // Helles Gelb-Orange. Symbolisiert Energie, Vitalität und Warnungen.
   tertiary: "#00BCD4", // Ein sattes Türkis. Kann für Akzente und Hervorhebungen verwendet werden.
   quaternary: "#E59221", // Ein warmes Orange. Kann für Akzente und Hervorhebungen verwendet werden.
@@ -23,8 +23,8 @@ export const Colors = {
   error: "#F44336", // Rot für Fehler oder negative Aktionen
 
   dark: {
-    background: "#121212", // Sehr dunkler, fast schwarzer Hintergrund
-    navBackground: "#1C1C1C", // Etwas helleres Grau, um sich vom Hauptbereich abzuheben
+    background: "#1C1C1C", // Sehr dunkler, fast schwarzer Hintergrund
+    navBackground: "#121212",// Etwas helleres Grau, um sich vom Hauptbereich abzuheben
     uiBackground: "#2C2C2C", // Noch helleres Grau für UI-Elemente wie Karten oder Eingabefelder
     text: "#E0E0E0", // Sehr helles Grau für gute Lesbarkeit auf dunklem Hintergrund
     title: "#FFFFFF", // Weiß für Überschriften
@@ -32,6 +32,7 @@ export const Colors = {
     iconColorFocused: '#FFFFFF', // Weiß für fokussierte Icons
     highlight: "#E59221", // Akzentfarbe für aktive Elemente und Hervorhebungen
     bw: '#333', // dunkles Grau für Border in dark Mode
+    bwturned: '#fff', // reines Weiß für Border in dark Mode
   },
 
   light: {
@@ -44,6 +45,7 @@ export const Colors = {
     iconColorFocused: '#1A1A1A', // Fast Schwarz für fokussierte Icons
     highlight: "#FFC107", // Akzentfarbe für aktive Elemente und Hervorhebungen
     bw: '#fff', // reines Weiß für Border in light Mode
+    bwturned: '#000', // reines Schwarz für Border in light Mode
   },
 }
 

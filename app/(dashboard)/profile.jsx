@@ -26,7 +26,7 @@ const Profile = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isPWModalVisible, setIsPWModalVisible] = useState(false);
   const { colors } = useContext(ColorContext);
-  const [overviewVisible, setOverviewVisible] = useState(false);
+  const [isColorModalVisible, setIsColorModalVisible] = useState(false);
 
 
   // Nährstoffnamen der getrackten Nährstoffe
@@ -92,7 +92,7 @@ const Profile = () => {
 
         <Spacer height={15} />
         {/* Quote */}
-        <ThemedText style={[styles.quote, { color: theme.iconColor }]}>
+        <ThemedText style={[styles.quote, { color: theme.bwturned }]}>
           "{user.profile.quote || "The best project you'll ever work on is you."}"
         </ThemedText>
         <Spacer height={30} />
@@ -129,7 +129,7 @@ const Profile = () => {
           {trackedNames.length > 0 ? (
             <ThemedView style={styles.chipsContainer}>
             {trackedNames.map(name => (
-              <ThemedText key={name} style={[styles.chip, { backgroundColor: theme.text, color: theme.bw}]}>
+              <ThemedText key={name} style={[styles.chip, { backgroundColor: colors.primary, color: "#fff"}]}>
                 {name}
               </ThemedText>
             ))}
@@ -165,32 +165,19 @@ const Profile = () => {
             thumbColor={themeName === "dark" ? "#fff" : "#f4f3f4"}
           />
         </View>
+
         {/* Color Picker Modal */}
         {/* Button zum Öffnen */}
-        <TouchableOpacity onPress={() => setOverviewVisible(true)} style={styles.settingRow}>
+        <TouchableOpacity onPress={() => setIsColorModalVisible(true)} style={styles.settingRow}>
           <MaterialIcons name="palette" size={22} color={colors.primary} />
-          <Text style={[styles.settingText, { color: colors.text }]}>Farben anpassen</Text>
+          <ThemedText style={[styles.settingText]}>Farben anpassen</ThemedText>
         </TouchableOpacity>
 
         {/* OverviewModal */}
           <ColorOverviewModal
-            visible={overviewVisible}
-            onClose={() => setOverviewVisible(false)}
+            visible={isColorModalVisible}
+            onClose={() => setIsColorModalVisible(false)}
           />
-
-{/* <TouchableOpacity onPress={() => setIsColorModalVisible(true)} style={styles.settingRow}>
-          <MaterialIcons name="palette" size={22} />
-          <Text style={[styles.settingText, { color: colors.text }]}>Farben anpassen</Text>
-        </TouchableOpacity>
-        <ColorModal
-  visible={isColorModalVisible}
-  onClose={() => setIsColorModalVisible(false)}
-  initialColors={Colors.light} // oder aktuelle User-Farben
-  onSave={(newColors) => {
-    console.log("Neue Farben:", newColors);
-    // z. B. in UserContext oder AsyncStorage speichern
-  }}
-/>  */}
       </View>
       
       {/* Danger Zone ganz unten rechts */}

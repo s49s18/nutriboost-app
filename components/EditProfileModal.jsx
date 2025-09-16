@@ -31,7 +31,7 @@ const EditProfileModal = ({ visible, onClose, user, onSave }) => {
     >
       <View style={styles.overlay}>
         <View style={[styles.modalContainer, { backgroundColor: theme.uiBackground }]}>
-          <Text style={[styles.title, { color: theme.text }]}>Profil bearbeiten</Text>
+          <Text style={[styles.title, { color: theme.bwturned }]}>Profil bearbeiten</Text>
 
           <TextInput
             placeholder="Vorname"

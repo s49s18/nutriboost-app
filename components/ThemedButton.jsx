@@ -8,7 +8,7 @@ const ThemedButton = ({style, ...props}) => {
   const { colors } = useContext(ColorContext);
   return (
     <Pressable 
-        style={({ pressed }) => [[styles.button, { backgroundColor: pressed ? colors.primary : colors.secondary }], pressed && styles.buttonPressed]}
+        style={({ pressed }) => [[styles.button, { backgroundColor: pressed ? colors.quaternary: colors.secondary }], pressed && styles.buttonPressed]}
         {...props}
     />
   )
