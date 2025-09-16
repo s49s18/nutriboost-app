@@ -1,11 +1,12 @@
 import React from 'react';
 import { Stack } from 'expo-router';
-import { useColorScheme } from 'react-native';
+import { useTheme} from "../../../contexts/ThemeContext";
 import { Colors } from '../../../constants/Colors';
 
 export default function NutrientsLayout() {
-  const colorScheme = useColorScheme();
-  const theme = Colors[colorScheme] ?? Colors.light;
+
+  const { themeName, toggleTheme } = useTheme();
+  const theme = themeName === "light" ? Colors.light : Colors.dark;
 
   return (
     <Stack
@@ -31,6 +32,10 @@ export default function NutrientsLayout() {
         options={{ 
           title: "Details",
           headerBackTitleVisible: false, // Zeigt keinen Titel für den Zurück-Button an
+          headerStyle: {
+          backgroundColor: theme.navBackground,
+            },
+          headerTintColor: theme.text,
         }} 
       />
     </Stack>
