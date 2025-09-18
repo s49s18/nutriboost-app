@@ -7,6 +7,7 @@ import { NutrientsProvider } from '../contexts/NutrientsContext'
 import AppHeader from '../components/AppHeader';
 import { ThemeProvider, useTheme } from '../contexts/ThemeContext';
 import { ColorProvider } from '../contexts/ColorContext';
+import { NotificationPermissionProvider } from './contexts/NotificationPermissionProvider';
 import { useFonts } from 'expo-font';
 import { useEffect } from 'react';
 import * as SplashScreen from 'expo-splash-screen';
@@ -58,13 +59,15 @@ const RootLayout = () => {
 
   return (
       <UserProvider>
-        <ThemeProvider>
-        <ColorProvider>
-        <NutrientsProvider>
-          <AppWrapper />
-        </NutrientsProvider>
-        </ColorProvider>
-        </ThemeProvider>
+         <NotificationPermissionProvider>
+          <ThemeProvider>
+            <ColorProvider>
+              <NutrientsProvider>
+                <AppWrapper />
+              </NutrientsProvider>
+            </ColorProvider>
+          </ThemeProvider>
+        </NotificationPermissionProvider>
       </UserProvider>
   );
 };

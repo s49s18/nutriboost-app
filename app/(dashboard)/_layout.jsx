@@ -4,6 +4,7 @@ import { Colors } from "../../constants/Colors"
 import { Ionicons } from "@expo/vector-icons"
 import UserOnly from "../../components/auth/UserOnly"
 import { useTheme } from "../../contexts/ThemeContext"
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function DashboardLayout() {
   const { themeName } = useTheme();
@@ -11,6 +12,7 @@ export default function DashboardLayout() {
 
   return (
     <UserOnly>
+      <SafeAreaView style={{ flex: 1, backgroundColor: theme.uiBackground }} edges={['bottom']}>
       <Tabs
         screenOptions={{
           headerShown: false,
@@ -40,6 +42,7 @@ export default function DashboardLayout() {
           options={{ title: "Reminder", tabBarIcon: ({ color, focused }) => <Ionicons name={focused ? "time" : "time-outline"} color={color} size={24} /> }} 
         />
       </Tabs>
+      </SafeAreaView>
     </UserOnly>
   )
 }

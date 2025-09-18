@@ -6,7 +6,7 @@ import { useRouter } from 'expo-router';
 import { useContext } from 'react';
 import { UserContext } from '../contexts/UserContexts';
 import { ColorContext } from '../contexts/ColorContext';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
 // themed components
 import ThemedView from '../components/ThemedView'
@@ -33,6 +33,7 @@ const Home = () => {
   }, [user]);
 
   return (
+    <SafeAreaProvider>
     <SafeAreaView style={{ flex: 1 }}>
     <ThemedView style={styles.container}>
       <Image source={{ uri: imageUrl2 }} style={styles.headerImage} resizeMode="cover" />
@@ -82,6 +83,7 @@ const Home = () => {
       </ThemedView>
     </ThemedView>
     </SafeAreaView>
+    </SafeAreaProvider>
   )
 }
 
