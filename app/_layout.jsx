@@ -7,7 +7,7 @@ import { NutrientsProvider } from '../contexts/NutrientsContext'
 import AppHeader from '../components/AppHeader';
 import { ThemeProvider, useTheme } from '../contexts/ThemeContext';
 import { ColorProvider } from '../contexts/ColorContext';
-import { NotificationPermissionProvider } from './contexts/NotificationPermissionProvider';
+import { NotificationPermissionProvider } from '../contexts/NotificationPermissionProvider';
 import { useFonts } from 'expo-font';
 import { useEffect } from 'react';
 import * as SplashScreen from 'expo-splash-screen';

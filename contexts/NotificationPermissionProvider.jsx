@@ -1,6 +1,5 @@
-// NotificationPermissionProvider.jsx
 import React, { createContext, useState, useEffect } from 'react';
-import { requestNotificationPermission } from '../lib/notification';
+import { requestNotificationPermission } from '../lib/notifications';
 
 export const NotificationContext = createContext({
   permissionGranted: false,

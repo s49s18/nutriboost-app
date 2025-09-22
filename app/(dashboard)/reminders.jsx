@@ -14,9 +14,7 @@ import { ColorContext } from '../../contexts/ColorContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { Colors } from '../../constants/Colors';
 import { supabase } from '../../lib/supabaseClient';
-import { scheduleReminder } from '../../lib/notifications';
-import { useContext } from 'react';
-import { NotificationContext } from '../../contexts/NotificationPermissionProvider';
+import { scheduleReminder, requestNotificationPermission } from '../../lib/notifications';
 
 const days = [
   { id: 2, label: "Mo" },
@@ -34,7 +32,6 @@ const ReminderScreen = () => {
   const { colors } = useContext(ColorContext);
   const { themeName } = useTheme();
   const theme = Colors[themeName] ?? Colors.light;
-  const { permissionGranted } = useContext(NotificationContext);
 
   const trackedNutrientObjects = allNutrients.filter(n => trackedNutrients.includes(n.id));
 
@@ -59,28 +56,34 @@ const ReminderScreen = () => {
   useEffect(() => { fetchReminders(); }, [user]);
 
   const saveReminder = async () => {
-    if (!permissionGranted) {
+    // Berechtigung prüfen oder anfordern
+    let allowed = await requestNotificationPermission();
+    if (!allowed) {
       setMessage('Benachrichtigungen sind nicht erlaubt.');
+      setTimeout(() => setMessage(''), 3000);
       return;
     }
 
     if (!selectedNutrient) {
       setMessage('Bitte wähle einen Nährstoff aus.');
+      setTimeout(() => setMessage(''), 3000);
       return;
     }
     if (frequency === "weekly" && selectedDays.length === 0) {
       setMessage("Bitte wähle mindestens einen Wochentag aus.");
+      setTimeout(() => setMessage(''), 3000);
       return;
     }
 
     try {
-      // Vorherige Reminder für diesen Nährstoff prüfen
+      // Vorhandene Reminder für diesen Nährstoff prüfen
       if (reminders.some(r => r.nutrient_id === selectedNutrient.id)) {
         setMessage('Für diesen Nährstoff ist bereits eine Erinnerung gesetzt.');
+        setTimeout(() => setMessage(''), 3000);
         return;
       }
 
-      // IDs für Notifications erstellen
+      // Notifications planen
       const notificationIds = await scheduleReminder({
         nutrient: selectedNutrient,
         time: selectedDate,
@@ -103,6 +106,9 @@ const ReminderScreen = () => {
       if (!error) {
         fetchReminders();
         setMessage('Erinnerung erfolgreich gespeichert!');
+        setTimeout(() => setMessage(''), 3000);
+
+        // Form zurücksetzen
         setSelectedNutrient(null);
         setSelectedDate(new Date());
         setSelectedDays([]);
@@ -112,6 +118,7 @@ const ReminderScreen = () => {
     } catch (err) {
       console.error(err);
       setMessage('Fehler beim Speichern der Erinnerung.');
+      setTimeout(() => setMessage(''), 3000);
     }
   };
 
@@ -126,9 +133,11 @@ const ReminderScreen = () => {
       await supabase.from("reminders").delete().eq("id", reminderId);
       fetchReminders();
       setMessage("Erinnerung erfolgreich gelöscht!");
+      setTimeout(() => setMessage(''), 3000);
     } catch (err) {
       console.error(err);
       setMessage("Fehler beim Löschen der Erinnerung.");
+      setTimeout(() => setMessage(''), 3000);
     }
   };
 
