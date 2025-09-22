@@ -38,7 +38,7 @@ export default function DashboardLayout() {
           options={{ title: "Overview", tabBarIcon: ({ color, focused }) => <Ionicons name={focused ? "bar-chart" : "bar-chart-outline"} color={color} size={24} /> }} 
         />
         <Tabs.Screen 
-          name="reminders"
+          name="reminderList"
           options={{ title: "Reminder", tabBarIcon: ({ color, focused }) => <Ionicons name={focused ? "time" : "time-outline"} color={color} size={24} /> }} 
         />
       </Tabs>
