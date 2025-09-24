@@ -1,8 +1,8 @@
 {
   "expo": {
     "scheme": "nutriboost",
-    "name": "nutriboost-app",
-    "slug": "nutriboost-app",
+    "name": "nutriboost",
+    "slug": "nutriboost",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -18,7 +18,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon-gold-crop-ob.png",
+        "foregroundImage": "./assets/adaptive-icon-gold.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
