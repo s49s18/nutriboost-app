@@ -36,7 +36,7 @@ export default function Login() {
           return;
         }
         console.log('current user is: ', user);
-        router.replace('/'); // <-- Navigate to index.jsx (root)
+        router.replace('/dashboard'); // <-- Navigate to dashboard or to '/' index.jsx
       } catch (error) {
         console.log('Login error:', error)
         setError(error)

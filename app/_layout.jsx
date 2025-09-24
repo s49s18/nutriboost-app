@@ -10,6 +10,7 @@ import { ColorProvider } from '../contexts/ColorContext';
 import { NotificationPermissionProvider } from '../contexts/NotificationPermissionProvider';
 import { useFonts } from 'expo-font';
 import { useEffect } from 'react';
+import { user } from '../hooks/useUser';
 import * as SplashScreen from 'expo-splash-screen';
 
 // Verhindert das automatische Ausblenden des Splash Screens
@@ -24,15 +25,17 @@ const AppWrapper = () => {
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <Stack
         screenOptions={{
-          headerStyle: { backgroundColor: theme.navBackground },
-          headerTintColor: theme.title,
+          headerShown: false, // gilt für alle Screens
         }}
       >
-        <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-        <Stack.Screen name="(dashboard)" options={{ headerShown: false }} />
-        <Stack.Screen name="about" options={{ title: 'About' }} />
-        <Stack.Screen name="contact" options={{ title: 'Contact' }} />
+        {user ? (
+          <Stack.Screen name="(dashboard)" />
+        ) : (
+          <>
+            <Stack.Screen name="index" />
+            <Stack.Screen name="(auth)" />
+          </>
+        )}
       </Stack>
     </View>
   );
