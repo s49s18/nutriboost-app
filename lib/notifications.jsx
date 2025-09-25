@@ -1,5 +1,5 @@
 import * as Notifications from 'expo-notifications';
-import { Alert, Platform } from 'react-native';
+import { Alert } from 'react-native';
 
 export const requestNotificationPermission = async () => {
   const { status: existingStatus } = await Notifications.getPermissionsAsync();
@@ -25,6 +25,18 @@ export const scheduleReminder = async ({ nutrient, time, frequency, days }) => {
   const notificationIds = [];
 
   if (frequency === "daily") {
+    const now = new Date();
+    const notificationTime = new Date();
+    notificationTime.setHours(time.getHours());
+    notificationTime.setMinutes(time.getMinutes());
+    notificationTime.setSeconds(0);
+    notificationTime.setMilliseconds(0);
+
+    // Wenn die geplante Zeit heute bereits vorbei ist, plane sie für morgen
+    if (notificationTime.getTime() <= now.getTime()) {
+      notificationTime.setDate(notificationTime.getDate() + 1);
+    }
+
     const id = await Notifications.scheduleNotificationAsync({
       content: {
         title: "Erinnerung",

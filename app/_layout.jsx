@@ -12,6 +12,17 @@ import { useFonts } from 'expo-font';
 import { useEffect } from 'react';
 import { user } from '../hooks/useUser';
 import * as SplashScreen from 'expo-splash-screen';
+import * as Notifications from 'expo-notifications';
+
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowBanner: true, 
+    shouldShowList: true,
+    shouldPlaySound: true,
+    shouldSetBadge: true,
+  }),
+});
 
 // Verhindert das automatische Ausblenden des Splash Screens
 SplashScreen.preventAutoHideAsync();
