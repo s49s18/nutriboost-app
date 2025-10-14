@@ -1,5 +1,6 @@
 import * as Notifications from 'expo-notifications';
-import { Alert } from 'react-native';
+import { Platform, Linking, Alert } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const requestNotificationPermission = async () => {
   const { status: existingStatus } = await Notifications.getPermissionsAsync();
@@ -12,62 +13,123 @@ export const requestNotificationPermission = async () => {
 
   if (finalStatus !== 'granted') {
     Alert.alert(
-      'Benachrichtigungen deaktiviert',
-      'Bitte aktiviere Benachrichtigungen in den App-Einstellungen, um Erinnerungen zu erhalten.'
+      "Benachrichtigungen deaktiviert",
+      "Bitte aktiviere Benachrichtigungen in den App-Einstellungen, um Erinnerungen zu erhalten.",
+      [
+        {
+          text: "Abbrechen",
+          style: "cancel",
+        },
+        {
+          text: "Einstellungen öffnen",
+          onPress: () => {
+            if (Platform.OS === "ios") {
+              Linking.openURL("app-settings:"); // öffnet direkt die App Settings unter iOS
+            } else {
+              Linking.openSettings(); // funktioniert unter Android
+            }
+          },
+        },
+      ]
     );
+
     return false;
   }
 
   return true;
 };
 
+// Plant Reminder (daily oder weekly)
 export const scheduleReminder = async ({ nutrient, time, frequency, days }) => {
+  // Berechtigung sicherstellen
+  const hasPermission = await requestNotificationPermission();
+  if (!hasPermission) return [];
+
+  // Android Channel Setup
+  if (Platform.OS === 'android') {
+    await Notifications.setNotificationChannelAsync('default', {
+      name: 'default',
+      importance: Notifications.AndroidImportance.MAX,
+      vibrationPattern: [0, 250, 250, 250],
+      lightColor: '#FF231F7C',
+    });
+  }
   const notificationIds = [];
+  const hour = time.getHours();
+  const minute = time.getMinutes();
 
   if (frequency === "daily") {
-    const now = new Date();
-    const notificationTime = new Date();
-    notificationTime.setHours(time.getHours());
-    notificationTime.setMinutes(time.getMinutes());
-    notificationTime.setSeconds(0);
-    notificationTime.setMilliseconds(0);
-
-    // Wenn die geplante Zeit heute bereits vorbei ist, plane sie für morgen
-    if (notificationTime.getTime() <= now.getTime()) {
-      notificationTime.setDate(notificationTime.getDate() + 1);
-    }
-
     const id = await Notifications.scheduleNotificationAsync({
       content: {
         title: "Erinnerung",
         body: `Vergiss nicht, ${nutrient.name} zu nehmen!`,
+        sound: true,
       },
       trigger: {
-        hour: time.getHours(),
-        minute: time.getMinutes(),
+        type: Notifications.SchedulableTriggerInputTypes.DAILY,
+        hour,
+        minute,
         repeats: true,
+        channelId: Platform.OS === "android" ? "default" : undefined,
       },
     });
     notificationIds.push(id);
+  }
 
-  } else if (frequency === "weekly") {
-    for (const weekday of days) {
+  if (frequency === "weekly" && Array.isArray(days)) {
+    for (let day of days) {
+      // Expo: 1 = Sonntag, 2 = Montag, …  
+      const weekday = day; // ggf. anpassen je nachdem, wie dein State dayId definiert
       const id = await Notifications.scheduleNotificationAsync({
         content: {
-          title: "Erinnerung",
+          title: "Wöchentliche Erinnerung",
           body: `Vergiss nicht, ${nutrient.name} zu nehmen!`,
+          sound: true,
         },
         trigger: {
-          weekday, // 1 = Sonntag, 2 = Montag, …
-          hour: time.getHours(),
-          minute: time.getMinutes(),
+          type: Notifications.SchedulableTriggerInputTypes.WEEKLY,
+          weekday,
+          hour,
+          minute,
           repeats: true,
+          channelId: Platform.OS === "android" ? "default" : undefined,
         },
       });
       notificationIds.push(id);
     }
   }
 
+  // Debug: Alle geplanten Notifications ausgeben
+  const allScheduled = await Notifications.getAllScheduledNotificationsAsync();
+  console.log("Geplante Notifications:", allScheduled);
+
   return notificationIds;
 };
 
+export const scheduleDailyReminderIfNeeded = async (currentStreak, allTaken) => {
+  // Wenn User schon alles genommen hat, Reminder nicht planen
+  if (allTaken) return;
+
+  // Prüfen, ob heute schon eine Notification geplant wurde
+  const todayKey = `reminderSent-${format(new Date(), 'yyyy-MM-dd')}`;
+  const alreadySent = await AsyncStorage.getItem(todayKey);
+  if (alreadySent) return;
+
+  // Notification planen (z. B. 20 Uhr)
+  const now = new Date();
+  const trigger = new Date();
+  trigger.setHours(20, 0, 0, 0);
+  if (trigger <= now) trigger.setDate(trigger.getDate() + 1); // für morgen planen, falls 20 Uhr vorbei
+
+  await Notifications.scheduleNotificationAsync({
+    content: {
+      title: "Vergiss nicht deine Nährstoffe!",
+      body: `Trage noch deine Nährwerte ein, um deine ${currentStreak}-Tage Streak nicht zu verlieren!`,
+      sound: true,
+    },
+    trigger,
+  });
+
+  // Speichern, dass Reminder heute geplant wurde
+  await AsyncStorage.setItem(todayKey, "true");
+};

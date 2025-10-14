@@ -49,10 +49,11 @@ const Nutrients = () => {
                 <TouchableOpacity
                   style={styles.checkboxContainer}
                   onPress={() => toggleTrackedNutrient(user.id, nutrient.id)}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }} 
                 >
                   <FontAwesome
                     name={isTracking ? 'check-square' : 'square-o'}
-                    size={24}
+                    size={30}
                     color={isTracking ? colors.secondary : Colors.light.iconColor}
                   />
                 </TouchableOpacity>

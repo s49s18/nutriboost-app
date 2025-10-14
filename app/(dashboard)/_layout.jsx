@@ -22,16 +22,12 @@ export default function DashboardLayout() {
         }}
       >
         <Tabs.Screen 
-          name="profile"
-          options={{ title: "Profile", tabBarIcon: ({ color, focused }) => <Ionicons name={focused ? "person" : "person-outline"} color={color} size={24} /> }} 
+          name="dashboard"
+          options={{ title: "Home", tabBarIcon: ({ color, focused }) => <Ionicons name={focused ? "home" : "home-outline"} color={color} size={24} /> }} 
         />
         <Tabs.Screen 
           name="nutrients"
           options={{ title: "Nutrients", tabBarIcon: ({ color, focused }) => <Ionicons name={focused ? "nutrition" : "nutrition-outline"} color={color} size={24} /> }} 
-        />
-        <Tabs.Screen 
-          name="dashboard"
-          options={{ title: "Home", tabBarIcon: ({ color, focused }) => <Ionicons name={focused ? "home" : "home-outline"} color={color} size={24} /> }} 
         />
         <Tabs.Screen 
           name="overview"
@@ -40,6 +36,10 @@ export default function DashboardLayout() {
         <Tabs.Screen 
           name="reminderList"
           options={{ title: "Reminder", tabBarIcon: ({ color, focused }) => <Ionicons name={focused ? "time" : "time-outline"} color={color} size={24} /> }} 
+        />
+        <Tabs.Screen 
+          name="profile"
+          options={{ title: "Profile", tabBarIcon: ({ color, focused }) => <Ionicons name={focused ? "person" : "person-outline"} color={color} size={24} /> }} 
         />
       </Tabs>
       </SafeAreaView>

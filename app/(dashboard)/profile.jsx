@@ -9,7 +9,7 @@ import { UserContext } from '../../contexts/UserContexts';
 import ThemedLoader from '../../components/ThemedLoader';
 import { Colors } from '../../constants/Colors';
 import { NutrientsContext } from '../../contexts/NutrientsContext';
-import { View, Text, Switch, StyleSheet, TouchableOpacity, Alert, Button } from "react-native";
+import { View, Text, Switch, StyleSheet, TouchableOpacity, Alert, ScrollView, Image} from "react-native";
 import { useTheme} from "../../contexts/ThemeContext";
 import EditProfileModal from '../../components/EditProfileModal';
 import ChangePasswordModal from '../../components/ChangePasswordModal';
@@ -66,15 +66,29 @@ const Profile = () => {
 
   return (
     <ThemedView style={styles.container}>
+      <ScrollView 
+      contentContainerStyle={styles.scrollContainer} 
+      showsVerticalScrollIndicator={false}
+    >
       <View style={styles.content}>
+        {/* RUNDES PROFILBILD */}
+        <Spacer height={30} />
+       {/*  <View style={styles.profileImageContainer}>
+          <Image
+            source={{ uri: user.profile.profile_image_url || 'https://via.placeholder.com/120' }} // Passe 'avatar_url' an deine Daten an
+            style={styles.profileImage}
+          />
+        </View> */}
+         <Spacer height={5} />
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
           <ThemedText style={[styles.headerText, { color: colors.secondary }]} title={true}>
-            My Profile
+             {user.profile.firstname}
           </ThemedText>
           <TouchableOpacity onPress={() => setIsModalVisible(true)}>
             <MaterialIcons name="edit" size={20} color={theme.iconColor} />
           </TouchableOpacity>
         </View>
+        <ThemedText> {user.email}</ThemedText>
         
         <EditProfileModal
           visible={isModalVisible}
@@ -90,23 +104,73 @@ const Profile = () => {
           }}
         />
 
-        <Spacer height={15} />
+        <Spacer height={5} />
         {/* Quote */}
         <ThemedText style={[styles.quote, { color: theme.bwturned }]}>
           "{user.profile.quote || "The best project you'll ever work on is you."}"
         </ThemedText>
         <Spacer height={30} />
-        
-        <ThemedView style={styles.infoRow}>
-          <ThemedText title={true} style={styles.heading}>Name:</ThemedText>
-          <ThemedText> {user.profile.firstname} {user.profile.lastname}  </ThemedText>
-        </ThemedView>
-        <ThemedView style={styles.infoRow}>
-          <ThemedText title={true} style={styles.heading}>E-Mail:</ThemedText>
-          <ThemedText> {user.email}</ThemedText>
-        </ThemedView>
 
-        {/* Passwort ändern */}
+        {/* Getrackte Nährstoffe */}
+        <View style={[styles.infoBox, { backgroundColor: theme.navBackground, borderColor: theme.uiBackground, borderBottomWidth: 1,
+  borderRightWidth: 1, }]}>
+          <Text title={true} style={[styles.heading, { color: theme.text }]}>Getrackte Nährstoffe:</Text>
+          {trackedNames.length > 0 ? (
+            <View style={styles.chipsContainer}>
+            {trackedNames.map(name => (
+              <View key={name} style={[styles.chip, { backgroundColor: theme.bwturned}]}>
+                <Text style={{ color: theme.bw, fontSize: 13, fontWeight: '600' }}>
+                  {name}
+                </Text>
+              </View>
+            ))}
+            </View>
+
+          /*   <ThemedView style={{ maxWidth: '50%'}}>
+              <ThemedText> {trackedNames.join(', ')}</ThemedText>
+            </ThemedView> */
+
+          ) : (
+            <Text style={{color: theme.text}}>Noch keine</Text>
+          )}
+        </View>
+        <Spacer height={10} />
+          {/* Zeigt einen Link nur an, wenn der Benutzer noch keine Nährstoffe hat */}
+          {trackedNutrients.length === 0 && (
+            <Link href="/nutrients" style={styles.emptyStateLink}>
+              <ThemedText style={[styles.emptyStateText, { color: colors.primary }]}>
+                Starte jetzt mit dem Tracking deiner Nährstoffe ...
+              </ThemedText>
+            </Link>
+          )}
+        {/* Theme Switch */}
+        <View style={[styles.switchRow, { borderColor: theme.iconColor }]}>
+          <Text style={[styles.switchLabel, { color: theme.text }]}>
+            {themeName === "light" ? "☀️ Light Mode" : "🌙 Dark Mode"}
+          </Text>
+          <Switch
+            value={themeName === "dark"}
+            onValueChange={toggleTheme}
+            trackColor={{ false: "#767577", true: colors.primary }}
+            thumbColor={theme.iconColorFocused}
+          />
+        </View>
+        <Spacer height={5} />
+
+        {/* Color Picker Modal */}
+        {/* Button zum Öffnen */}
+        <TouchableOpacity onPress={() => setIsColorModalVisible(true)} style={styles.settingRow}>
+          <MaterialIcons name="palette" size={22} color={colors.primary} />
+          <ThemedText style={[styles.settingText]}>Themefarben anpassen</ThemedText>
+        </TouchableOpacity>
+
+        {/* OverviewModal */}
+          <ColorOverviewModal
+            visible={isColorModalVisible}
+            onClose={() => setIsColorModalVisible(false)}
+          />
+
+          {/* Passwort ändern */}
         <TouchableOpacity style={styles.settingRow} onPress={() => setIsPWModalVisible(true)}>
           <MaterialIcons name="lock-reset" size={22} color={theme.text} />
           <ThemedText style={styles.settingText}>Passwort ändern</ThemedText>
@@ -123,63 +187,8 @@ const Profile = () => {
               }
             }}
           />
-
-        <ThemedView style={styles.infoRow}>
-          <ThemedText title={true} style={styles.heading}>Nutritions to track:</ThemedText>
-          {trackedNames.length > 0 ? (
-            <ThemedView style={styles.chipsContainer}>
-            {trackedNames.map(name => (
-              <ThemedText key={name} style={[styles.chip, { backgroundColor: colors.primary, color: "#fff"}]}>
-                {name}
-              </ThemedText>
-            ))}
-          </ThemedView>
-          /*   <ThemedView style={{ maxWidth: '50%'}}>
-              <ThemedText> {trackedNames.join(', ')}</ThemedText>
-            </ThemedView> */
-
-          ) : (
-            <ThemedText>None yet</ThemedText>
-          )}
-        </ThemedView>
-        <Spacer height={20} />
-          {/* Zeigt einen Link nur an, wenn der Benutzer noch keine Nährstoffe hat */}
-          {trackedNutrients.length === 0 && (
-            <Link href="/nutrients" style={styles.emptyStateLink}>
-              <ThemedText style={[styles.emptyStateText, { color: colors.primary }]}>
-                Time to start tracking some nutritions ...
-              </ThemedText>
-            </Link>
-          )}
-
-
-        {/* Theme Switch */}
-        <View style={styles.switchRow}>
-          <Text style={[styles.switchLabel, { color: Colors.neutral.text }]}>
-            {themeName === "light" ? "☀️ Light Mode" : "🌙 Dark Mode"}
-          </Text>
-          <Switch
-            value={themeName === "dark"}
-            onValueChange={toggleTheme}
-            trackColor={{ false: "#767577", true: colors.primary }}
-            thumbColor={themeName === "dark" ? "#fff" : "#f4f3f4"}
-          />
-        </View>
-
-        {/* Color Picker Modal */}
-        {/* Button zum Öffnen */}
-        <TouchableOpacity onPress={() => setIsColorModalVisible(true)} style={styles.settingRow}>
-          <MaterialIcons name="palette" size={22} color={colors.primary} />
-          <ThemedText style={[styles.settingText]}>Farben anpassen</ThemedText>
-        </TouchableOpacity>
-
-        {/* OverviewModal */}
-          <ColorOverviewModal
-            visible={isColorModalVisible}
-            onClose={() => setIsColorModalVisible(false)}
-          />
       </View>
-      
+      <Spacer height={20} />
       {/* Danger Zone ganz unten rechts */}
       <View style={styles.footer}>
         <TouchableOpacity onPress={handleDeleteAccount} style={[styles.settingRow]}>
@@ -187,12 +196,12 @@ const Profile = () => {
           <Text style={[styles.settingText, { color: Colors.error, fontSize: 12 }]}>Account löschen</Text>
         </TouchableOpacity>
       </View>
-
+      </ScrollView>
     </ThemedView>
   )
-}
+};
 
-export default Profile
+export default Profile;
 
 const styles = StyleSheet.create({
   container: {
@@ -210,13 +219,26 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 26,
   },
+  profileImageContainer: {
+    width: 120,
+    height: 120,
+    borderRadius: 60, 
+    overflow: 'hidden',
+    marginTop: 20,
+    borderWidth: 3, 
+    borderColor: '#eee', 
+  },
+  profileImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
   infoRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 10,
-    //borderBottomWidth: 1,
-    //borderBottomColor: Colors.light.iconColor, // Ein hellerer Grauton für die Trennlinie
+    paddingVertical: 12,
+    borderBottomWidth: StyleSheet.hairlineWidth, 
   },
   quote: {
     fontSize: 18,
@@ -225,7 +247,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   emptyStateLink: {
-    marginTop: 20,
+    marginBottom: 30,
     textAlign: 'center',
   },
   emptyStateText: {
@@ -237,52 +259,69 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    width: "80%",
-    marginBottom: 20,
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-    borderRadius: 15,
-    backgroundColor: "#e0e0e0",
+    width: "100%",
+    marginBottom: 10,
+    paddingVertical: 15,
+    paddingHorizontal: 30,
+    borderRadius: 10,
+    borderWidth: 2,
   },
   switchLabel: {
     fontSize: 16,
     fontWeight: "600",
   },
+  infoBox: {
+    width: '100%',
+    padding: 20,
+    alignItems: 'flex-start', // nicht center, damit Text links steht
+    shadowColor: '#000',
+    shadowOffset: { width: 1, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2, // für Android
+  },
+
+  heading: {
+    fontWeight: "600",
+    fontSize: 15,
+    marginBottom: 10,
+  },
+
   chipsContainer: {
-  flexDirection: 'row',
-  flexWrap: 'wrap',
-  gap: 5,
-  justifyContent: 'center',
-  maxWidth: '50%',
-},
-chip: {
-  paddingHorizontal: 10,
-  paddingVertical: 5,
-  borderRadius: 15,
-  color: '#fff',
-  fontSize: 12,
-},
-settingRow: {
-  flexDirection: "row",
-  alignItems: "center",
-  paddingVertical: 12,
-},
-settingText: {
-  marginLeft: 10,
-  fontSize: 15,
-},
-content: {
-  flexGrow: 1,
-  justifyContent: "center",
-  alignItems: "center",
-},
-footer: {
-  alignItems: "flex-end",
-},
-quoteRow: {
-  flexDirection: "row",
-  alignItems: "center",
-  justifyContent: "center",
-  gap: 5,
-},
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+
+  chip: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    fontSize: 13,
+    fontWeight: '500',
+    overflow: 'hidden',
+  },
+  settingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 15,
+  },
+  settingText: {
+    marginLeft: 10,
+    fontSize: 15,
+  },
+  content: {
+    flexGrow: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  footer: {
+    alignItems: "flex-end",
+  },
+  quoteRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 5,
+  },
 })

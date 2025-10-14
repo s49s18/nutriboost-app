@@ -1,6 +1,8 @@
 import React, { createContext, useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import * as Linking from 'expo-linking';
+import * as FileSystem from 'expo-file-system';
+import { decode } from 'base64-arraybuffer';
 
 // Erstelle den Kontext
 export const UserContext = createContext();
@@ -198,32 +200,73 @@ export const UserProvider = ({ children }) => {
     }
   } 
 
-  const updateProfile = async (updates) => {
-  if (!user?.id) {
-    console.error("No user ID available");
-    return false;
-  }
+  // Bild hochladen
+  const uploadProfileImage = async (userId, localUri) => {
+    try {
+      // Dateiendung bestimmen
+        console.log('FileSystem:', FileSystem);
+      console.log('EncodingType:', FileSystem.EncodingType);
+      
+      const fileExt = localUri.split('.').pop();
+      const fileName = `${userId}_${Date.now()}.${fileExt}`;
+      const filePath = `avatars/${fileName}`;
 
-  const { data, error } = await supabase
-    .from('profiles')
-    .update(updates)
-    .eq('id', user.id)
-    .select('*');
+      // Datei in Base64 lesen
+      const base64Data = await FileSystem.readAsStringAsync(localUri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
 
-  if (error) {
-    console.error("Error updating profile:", error);
-    return false;
-  }
+      // Base64 → ArrayBuffer (korrekte Methode für React Native)
+      const fileBuffer = decode(base64Data);
 
-  if (!data || data.length === 0) {
-    console.error("Update affected 0 rows - check user ID and table! ID:", user.id);
-    return false;
-  }
+      // Datei zu Supabase Storage hochladen
+      const { error } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, fileBuffer, {
+          contentType: `image/${fileExt}`,
+          upsert: true,
+        });
 
-  // Context aktualisieren
-  setUser(prev => ({ ...prev, profile: { ...prev.profile, ...updates } }));
-  return true;
-};
+      if (error) {
+        console.error('Upload error:', error);
+        return null;
+      }
+
+      // Öffentliche URL holen
+      const { data } = supabase.storage.from('avatars').getPublicUrl(filePath);
+      return data.publicUrl;
+    } catch (err) {
+      console.error('Upload failed:', err);
+      return null;
+    }
+  };
+
+
+    // Profil aktualisieren
+    const updateProfile = async (updates) => {
+      if (!user?.id) return false;
+
+      let updatesWithAvatar = { ...updates };
+
+      if (updates.avatar_url && updates.avatar_url.startsWith('file://')) {
+        const uploadedUrl = await uploadProfileImage(user.id, updates.avatar_url);
+        if (!uploadedUrl) return false;
+        updatesWithAvatar.avatar_url = uploadedUrl;
+      }
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .update(updatesWithAvatar)
+        .eq('id', user.id)
+        .select('*');
+
+      if (error || !data || data.length === 0) return false;
+
+      setUser(prev => ({ ...prev, profile: { ...prev.profile, ...updatesWithAvatar } }));
+      return true;
+    };
+
+
 
 
 /*   const updateProfile = async ({ firstname, lastname }) => {
@@ -295,7 +338,7 @@ export const UserProvider = ({ children }) => {
   }
 
   return (
-    <UserContext.Provider value={{ user, login, logout, register, resetPassword, updateUser, updateProfile, deleteProfile, deleteUser, loading }}>
+    <UserContext.Provider value={{ user, login, logout, register, resetPassword, updateUser, uploadProfileImage, updateProfile, deleteProfile, deleteUser, loading }}>
       {children}
     </UserContext.Provider>
   );

@@ -1,6 +1,7 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { UserContext } from "./UserContexts";
+import { format } from 'date-fns';
 
 export const NutrientsContext = createContext();
 
@@ -13,7 +14,7 @@ export function NutrientsProvider({ children }) {
   const [loadingTracked, setLoadingTracked] = useState(true);
   const [takenToday, setTakenToday] = useState({}); // { nutrient_id: true/false }
 
-  const todayStr = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+  const todayStr = format(new Date(), 'yyyy-MM-dd'); // YYYY-MM-DD
 
 
   useEffect(() => {
@@ -138,43 +139,172 @@ export function NutrientsProvider({ children }) {
     setTakenToday(statusMap);
   }
 
+  // ------------------ Toggle Taken + Daily Completion ------------------
   async function toggleTaken(userId, nutrientId) {
     const alreadyTaken = takenToday[nutrientId] === true;
 
-    if (alreadyTaken) {
-      // Falls wieder abwählen => löschen oder taken=false
+    const newTakenToday = { ...takenToday, [nutrientId]: !alreadyTaken };
+    setTakenToday(newTakenToday);
+
+    if (!alreadyTaken) {
+      const { error } = await supabase.from("user_nutrient_log")
+        .insert([{ user_id: userId, nutrient_id: nutrientId, date: todayStr, taken: true }]);
+
+        if (error) {
+          console.error("Fehler beim Einfügen:", error);
+          return;
+        }
+
+      } else {
+        await supabase.from("user_nutrient_log")
+          .delete()
+          .eq("user_id", userId)
+          .eq("nutrient_id", nutrientId)
+          .eq("date", todayStr);
+      }
+
+        //setTakenToday((prev) => ({ ...prev, [nutrientId]: true }));
+
+    await updateDailyCompletion(newTakenToday);
+  }
+
+
+  async function updateDailyCompletion(takenState) {
+    // Prüfen, ob heute alle getrackten Nutrients genommen wurden
+    if (!user) return;
+    const allTakenToday = trackedNutrients.every(id => takenState[id]);
+
+    if (allTakenToday) {
+      console.log("Upsert started")
+      // Upsert: Tag speichern
       const { error } = await supabase
-        .from("user_nutrient_log")
+        .from("user_daily_completion")
+        .upsert({ user_id: user.id, date: todayStr }, { onConflict: ["user_id", "date"] });
+
+      if (error) console.error("Fehler beim Upsert Daily Completion:", error);
+    } else {
+      // Tag löschen, falls nicht mehr alles genommen
+      const { error } = await supabase
+        .from("user_daily_completion")
         .delete()
-        .eq("user_id", userId)
-        .eq("nutrient_id", nutrientId)
+        .eq("user_id", user.id)
         .eq("date", todayStr);
 
-      if (error) {
-        console.error("Fehler beim Löschen:", error);
-        return;
-      }
-
-      setTakenToday((prev) => ({ ...prev, [nutrientId]: false }));
-    } else {
-      // Falls markieren => einfügen
-      const { error } = await supabase.from("user_nutrient_log").insert([
-        {
-          user_id: user.id,
-          nutrient_id: nutrientId,
-          date: todayStr,
-          taken: true,
-        },
-      ]);
-
-      if (error) {
-        console.error("Fehler beim Einfügen:", error);
-        return;
-      }
-
-      setTakenToday((prev) => ({ ...prev, [nutrientId]: true }));
+      if (error) console.error("Fehler beim Löschen Daily Completion:", error);
     }
   }
+
+  // ------------------ Weekly Streak ------------------
+   function getCurrentWeekDates() {
+    const today = new Date();
+    const day = today.getDay(); // 0=Sun, 1=Mon, ...
+    const monday = new Date(today);
+    monday.setDate(today.getDate() - ((day + 6) % 7));
+    const dates = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(monday);
+      d.setDate(monday.getDate() + i);
+      dates.push(format(d, 'yyyy-MM-dd'));
+    }
+    return dates;
+  }
+
+  async function loadWeekStreak() {
+    if (!user) return [];
+    const weekDates = getCurrentWeekDates(); // z.B. ["2025-10-01", ...]
+
+    const { data, error } = await supabase
+      .from("user_daily_completion")
+      .select("date")
+      .eq("user_id", user.id)
+      .gte("date", weekDates[0])
+      .lte("date", weekDates[6]);
+
+    if (error) {
+      console.error("Fehler beim Laden der Streak:", error);
+      return [];
+    }
+
+    return weekDates.map(d => data.some(entry => entry.date === d)); // Array von true/false
+  }
+
+  async function loadCurrentStreak() {
+    try {
+      const { data, error } = await supabase
+        .from("user_daily_completion")
+        .select("date")
+        .eq("user_id", user?.id)
+        .order("date", { ascending: false });
+
+      if (error) {
+        console.warn("Supabase error:", error);
+        return 0;
+      }
+
+      if (!Array.isArray(data)) {
+        console.error("Unerwarteter Datentyp von Supabase:", data);
+        return 0;
+      }
+
+      console.log("Daten von Supabase:", data);
+
+      // Nur gültige Datumseinträge nehmen
+      const dates = data
+        .map(d => {
+          if (!d?.date || typeof d.date !== "string") return null;
+          const cleanDate = d.date.split("T")[0];
+          const parsed = new Date(cleanDate);
+          return isNaN(parsed.getTime()) ? null : parsed;
+        })
+        .filter(Boolean);
+
+      if (dates.length === 0) return 0;
+
+      // Doppelte entfernen
+      const uniqueDates = [...new Set(dates.map(d => d.toISOString().split("T")[0]))];
+      const dateObjs = uniqueDates.map(d => new Date(d));
+
+      let streak = 1;
+      const today = new Date();
+      const todayStr = today.toISOString().split("T")[0];
+      const hasToday = uniqueDates.includes(todayStr);
+
+      let previous = new Date(hasToday ? todayStr : subtractDays(today, 1));
+
+      for (let i = 0; i < dateObjs.length; i++) {
+        const current = dateObjs[i];
+        if (!current || isNaN(current.getTime())) continue;
+
+        const diffDays = Math.round(
+          (previous - current) / (1000 * 60 * 60 * 24)
+        );
+
+        if (diffDays === 1) {
+          streak++;
+          previous = current;
+        } else if (diffDays === 0) {
+          continue;
+        } else {
+          break;
+        }
+      }
+
+      if (typeof streak !== "number" || !isFinite(streak)) return 0;
+      return streak;
+    } catch (err) {
+      console.error("Fehler beim Laden der aktuellen Streak:", JSON.stringify(err, null, 2));
+      return 0;
+    }
+  }
+
+  function subtractDays(date, days) {
+    const d = new Date(date);
+    if (isNaN(d.getTime())) return new Date();
+    d.setDate(d.getDate() - days);
+    return d;
+  }
+
+
 
   // Neuen Nährstoff erstellen
   async function createNutrient(data) {
@@ -225,7 +355,9 @@ export function NutrientsProvider({ children }) {
         takenToday,
         toggleTaken,
         createNutrient,
-        deleteNutrient
+        deleteNutrient,
+        loadWeekStreak,
+        loadCurrentStreak,
       }}
     >
       {children}

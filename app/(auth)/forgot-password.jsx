@@ -66,13 +66,13 @@ export default function ForgotPasswordScreen() {
         onChangeText={setEmail}
       />
 
-      <Spacer height={20} />
+      <Spacer height={5} />
 
       {loading ? (
         <ActivityIndicator />
       ) : (
         <ThemedButton title="Reset-Link senden" onPress={handlePasswordReset}>
-            <Text style={styles.buttonText}>Reset-Link senden</Text>
+            <Text style={styles.buttonText}>Reset-Link Senden</Text>
         </ThemedButton>
       )}
       <Spacer height={20} />
@@ -95,12 +95,14 @@ const styles = StyleSheet.create({
  },
  title: {
   textAlign: 'center',
-  fontSize: 18,
+  fontSize: 20,
   marginBottom: 30,
+  fontFamily: 'Comfortaa',
  },
  buttonText: {
-  color: '#f2f2f2',
-  fontSize: 16,
+  color: '#fff',
+  fontSize: 18,
+  fontWeight: 'bold',
  },
  error: {
   color: Colors.warning,

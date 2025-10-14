@@ -24,7 +24,7 @@ export default function Login() {
         setError(null); // Reset error state
 
         if (!email || !password) {
-            setError("Please enter both email and password.");
+            setError("Bitte gib sowohl E-Mail als auch Passwort ein.");
             setLoading(false);
             return;
         }
@@ -48,7 +48,7 @@ export default function Login() {
         <ThemedView style={styles.container}>
             <Spacer />
             <ThemedText title={true} style={styles.title}>
-                Login to Your Account
+                Bei deinem Konto anmelden
             </ThemedText>
             <ThemedTextInput
                 style={{ width: '80%', marginBottom: 20 }}
@@ -61,7 +61,7 @@ export default function Login() {
 
             <ThemedTextInput
                 style={{ width: '80%', marginBottom: 20 }}
-                placeholder="Password"
+                placeholder="Passwort"
                 secureTextEntry
                 onChangeText={setPassword}
                 value={password}
@@ -69,9 +69,12 @@ export default function Login() {
              {error && <Text style={styles.error}>{error}</Text>}
 
             <Spacer height={20} />
-            <ThemedButton onPress={handleSubmit}>
+          {/*   <ThemedButton style={{paddingHorizontal: 140}} onPress={handleSubmit}>
                 <Text style={styles.buttonText}>Login</Text>
-            </ThemedButton>
+            </ThemedButton> */}
+            <Pressable style={[styles.button]} onPress={handleSubmit}>
+              <Text style={styles.buttonText}>Login</Text>
+            </Pressable>
             <Spacer height={20}/>
             <Pressable onPress={() => router.push('/forgot-password')}>
               <ThemedText style={styles.link}>Passwort vergessen?</ThemedText>
@@ -81,7 +84,7 @@ export default function Login() {
             <Spacer height={100} />
             <Link href="/register" replace>
                 <ThemedText style={{ textAlign: "center" }}>
-                    Register instead
+                    Zur Registrierung
                 </ThemedText>
             </Link>
         </ThemedView>
@@ -97,13 +100,24 @@ const styles = StyleSheet.create({
   },
   title: {
     textAlign: "center",
-    fontSize: 18,
-    marginBottom: 30
+    fontSize: 20,
+    marginBottom: 30,
+    fontFamily: 'Comfortaa',
   },
-
+  button: {
+    padding: 18,
+    paddingHorizontal: 140,
+    borderRadius: 5,
+    alignItems: 'center',
+    backgroundColor: '#000'
+  },
+  buttonPressed: {
+    opacity: 0.5,
+  },
   buttonText: {
-      color: '#f2f2f2',
-      fontSize: 16,
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
   error: {
       color: Colors.warning,

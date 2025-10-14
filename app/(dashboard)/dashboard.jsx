@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect  } from 'react';
+import React, { useRef, useState, useContext, useEffect  } from 'react';
 import { View, StyleSheet, TouchableOpacity, FlatList, Text} from 'react-native';
 import { supabase } from '../../lib/supabaseClient';
 import ThemedText from '../../components/ThemedText';
@@ -12,19 +12,26 @@ import { NutrientsContext } from '../../contexts/NutrientsContext';
 import Spacer from '../../components/Spacer';
 import * as Notifications from 'expo-notifications';
 import AppHeader from '../../components/AppHeader';
-import { format } from 'date-fns';
 import ConfettiCannon from 'react-native-confetti-cannon';
 import { ColorContext } from '../../contexts/ColorContext';
-
+import { startOfWeek, endOfWeek, eachDayOfInterval, format } from "date-fns";
+import { useTheme } from '../../contexts/ThemeContext';
+import { Link } from 'expo-router';
 
 const StartScreen = () => {
   const { user } = useContext(UserContext);
-  const { allNutrients, trackedNutrients, takenToday, toggleTaken } = useContext(NutrientsContext);
-  const allTaken = trackedNutrients.length > 0 && trackedNutrients.every(id => takenToday[id]);
+  const { allNutrients, trackedNutrients, takenToday, toggleTaken, loadWeekStreak, loadCurrentStreak } = useContext(NutrientsContext);
+  const [weekStreak, setWeekStreak] = useState([]);
+  const [currentStreak, setCurrentStreak] = useState(0);
   const trackedNutrientObjects = allNutrients.filter(n => trackedNutrients.includes(n.id));
+  const allTaken = trackedNutrients.length > 0 && trackedNutrients.every(id => takenToday[id]);
+  const prevAllTaken = useRef(false); // merkt sich den vorherigen Zustand
+  const [loading, setLoading] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [funFact, setFunFact] = useState('');
   const { colors } = useContext(ColorContext);
+  const { themeName } = useTheme();
+  const theme = Colors[themeName] ?? Colors.light;
 
   // Effekt, um einen zufälligen Fun-Fact zu laden, wenn die Komponente geladen wird
   useEffect(() => {
@@ -53,41 +60,53 @@ const StartScreen = () => {
   }, []);
 
   useEffect(() => {
-    const registerForPushNotificationsAsync = async () => {
-      const { status: existingStatus } = await Notifications.getPermissionsAsync();
-      let finalStatus = existingStatus;
-      if (existingStatus !== 'granted') {
-        const { status } = await Notifications.requestPermissionsAsync();
-        finalStatus = status;
-      }
-      if (finalStatus !== 'granted') {
-        alert('Failed to get push token for push notification!');
-        return;
-      }
-      // Token hier ggf. an deinen Server senden
-    };
+    if (currentStreak === 5 || currentStreak === 10) {
+      scheduleStreakReminder(currentStreak, allTaken);
+    }
+  }, [currentStreak, allTaken]);
 
-    Notifications.setNotificationHandler({
-      handleNotification: async () => ({
-        shouldShowAlert: true,
-        shouldPlaySound: false,
-        shouldSetBadge: false,
-      }),
-    });
 
-    registerForPushNotificationsAsync();
-  }, []);
-
+  
   useEffect(() => {
-    if (allTaken) {
+    if (allTaken && !prevAllTaken.current) {
+      // nur wenn vorher false und jetzt true
       setShowConfetti(true);
-      // nach ein paar Sekunden automatisch wieder ausblenden
       setTimeout(() => setShowConfetti(false), 4000);
     }
+
+    prevAllTaken.current = allTaken; // Zustand für nächsten Render merken
   }, [allTaken]);
 
+  useEffect(() => {
+    const fetchStreak = async () => {
+      try {
+        const streak = await loadWeekStreak();
+        setWeekStreak(Array.isArray(streak) ? streak : []);
+
+        const totalStreak = await loadCurrentStreak();
+        setCurrentStreak(Number.isFinite(totalStreak) ? totalStreak : 0);
+      } catch (e) {
+        console.error("Fehler beim Laden der Streaks:", e);
+        setCurrentStreak(0);
+        setWeekStreak([]);
+      }
+    };
+    fetchStreak();
+  }, []);
+
+
+
+  const handleToggle = async (userId, nutrientId) => {
+    await toggleTaken(userId, nutrientId);
+    const streak = await loadWeekStreak();
+    setWeekStreak(streak);
+    const totalStreak = await loadCurrentStreak();
+    setCurrentStreak(totalStreak);
+  };
+
+
   return (
-    <ThemedView style={styles.container}>
+    <ThemedView style={[styles.container, {flex: 1, justifyContent: 'space-between' }]}>
        <AppHeader />
       <Spacer width={20}/>
         <ThemedView style={styles.card}>
@@ -100,39 +119,110 @@ const StartScreen = () => {
         </Text>
       </ThemedView>
 
-
-
+      <View style={{flexDirection: "row", alignItems: "flex-start", marginBottom: 25}}>
       {/* Liste */}
+      {trackedNutrientObjects.length > 0 ? (
       <FlatList
         data={trackedNutrientObjects}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
-          <View style={styles.itemRow}>
-            <TouchableOpacity onPress={() => toggleTaken(user.id, item.id)}>
-              <FontAwesome
-                name={takenToday[item.id] ? 'check-square' : 'square-o'}
-                size={24}
-                color={takenToday[item.id] ? colors.secondary : Colors.light.iconColor}
-              />
-            </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.itemRow} 
+            onPress={() => handleToggle(user.id, item.id)}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }} 
+          >
+            <FontAwesome
+              name={takenToday[item.id] ? 'check-square' : 'square-o'}
+              size={28}
+              color={takenToday[item.id] ? colors.secondary : theme.iconColor}
+              style={{ marginHorizontal: 15 }} 
+            />
             <ThemedText style={styles.itemText}>
-              {item.name} {'  '}
-              <ThemedText style={{ fontStyle: 'italic' }}>
-                ({takenToday[item.id] ? 'Genommen' : 'Noch nicht'})
-              </ThemedText>
+              {item.name}
             </ThemedText>
+          </TouchableOpacity>
+        )}
+        style={{maxHeight: 220}}
+      />) : (
+           <View style={styles.emptyStateContainer}>
+            <Text style={[styles.emptyStateText, {color: theme.text}]}>
+              Du hast noch keine Nährstoffe ausgewählt. Wähle jetzt deine Nährstoffe aus, um dein Dashboard zu personalisieren:
+            </Text>
+            <Link href="/nutrients" style={[styles.emptyStateLink, {backgroundColor: colors.secondary }]}>
+              <Text style={[styles.emptyStateLinkText, { color: '#fff' }]}>
+                Nährstoffe auswählen
+              </Text>
+            </Link>
+          </View>
+      )}
+
+       {/* Streak rechts daneben */}
+      <View style={{
+        width: 150,
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 8,
+        backgroundColor: colors.card,
+        borderRadius: 16,
+      }}>
+        <FontAwesome name="fire" size={28} color="orange" />
+        <ThemedText style={{ fontSize: 16, marginTop: 4 }}>
+          {currentStreak}🔥
+        </ThemedText>
+        <ThemedText style={{ fontSize: 12, color: "gray" }}>
+          Tage in Folge
+        </ThemedText>
+
+          {/* --- "Alle genommen" Box darunter --- */}
+        {allTaken && (
+          <View
+            style={{
+              alignItems: "center",
+              width: "100%",
+            }}
+          >
+            <View
+              style={[styles.successBox, { backgroundColor: theme.iconColor, }]}
+            >
+              <Text style={[styles.successText, { color: theme.bw}]}>
+                Alle genommen 🎉
+              </Text>
+            </View>
           </View>
         )}
-      />
+      </View>
+    </View>
 
       {/* Button "Alle genommen" */}
-      {allTaken && (
-        <View style={[styles.successBox, {backgroundColor: colors.tertiary}]}>
-          <Text style={styles.successText}>
-            Alle genommen 🎉
-          </Text>
+     {/*  {allTaken && (
+        <ThemedView style={{ alignItems: 'center', marginBottom: 20 }}>
+          <View style={[styles.successBox, {backgroundColor: colors.tertiary}]}>
+            <Text style={styles.successText}>
+              Alle genommen 🎉
+            </Text>
+          </View>
+        </ThemedView>
+      )} */}
+      {/* </View> */}
+
+       {/* --- Streak Anzeige --- */}
+      <View style={styles.streakContainer}>
+        <ThemedText style={styles.streakTitle}>Wöchentliche Streak</ThemedText>
+        <View style={styles.streakRow}>
+          {weekStreak.map((done, index) => (
+            <FontAwesome
+              key={index}
+              name={done ? 'fire' : 'circle-o'}
+              size={20}
+              color={done ? 'orange' : 'gray'}
+              style={{ marginHorizontal: 4 }}
+            />
+          ))}
         </View>
-      )}
+        <ThemedText style={styles.streakInfo}>
+          {weekStreak.filter(Boolean).length} / 7 Tage geschafft 🎉
+        </ThemedText>
+      </View>
 
       {/* Confetti */}
       {showConfetti && (
@@ -148,10 +238,12 @@ const StartScreen = () => {
 
       {/* Neuer Container für den Fun-Fact */}
       {funFact ? (
-        <ThemedCard style={styles.funFactCard}>
-          <Text style={styles.funFactTitle}>Fun Fact 🎉</Text>
-          <Text style={styles.funFactText}>{funFact}</Text>
-        </ThemedCard>
+        <ThemedView style={{ alignItems: 'center', marginBottom: 20 }}>
+          <ThemedCard style={styles.funFactCard}>
+            <Text style={styles.funFactTitle}>Fun Fact 🎉</Text>
+            <Text style={styles.funFactText}>{funFact}</Text>
+          </ThemedCard>
+        </ThemedView>
       ) : null}
 
     </ThemedView>
@@ -164,7 +256,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     //padding: 20,
-    alignItems: 'center',
+    //alignItems: 'center',
   },
   card: {
     width: '100%',
@@ -191,22 +283,50 @@ const styles = StyleSheet.create({
   itemRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 10,
+    paddingVertical: 5,
+    paddingLeft: 40,
   },
   itemText: {
-    marginLeft: 10,
+    paddingLeft: 20,
     fontSize: 16,
+    flexShrink: 1,
+  },
+  streakContainer: {
+    alignItems: 'center',
+    padding: 15,
+    borderTopWidth: 1,
+    borderColor: '#ddd',
+  },
+  streakTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  streakRow: {
+    flexDirection: 'row',
+    marginBottom: 8,
+  },
+  streakInfo: {
+    fontSize: 14,
+    color: 'gray',
   },
   successBox: {
-    marginTop: 30,
-    padding: 15,
-    borderRadius: 10,
     alignItems: 'center',
+    paddingVertical: 20,
+    paddingHorizontal: 5,
+    width: 100,
+    height: 100,
+    borderRadius: 60, 
+    overflow: 'hidden',
+    marginTop: 25,
+    borderWidth: 3, 
+    borderColor: '#eee', 
   },
   successText: {
     color: '#fff',
     fontWeight: 'bold',
-    fontSize: 18,
+    fontSize: 14,
+    textAlign: "center"
   },
   funFactCard: {
     width: '95%',
@@ -243,5 +363,26 @@ const styles = StyleSheet.create({
   reminderButtonText: {
     color: '#fff',
     fontWeight: 'bold',
-  }
+  },
+  emptyStateContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+   emptyStateLink: {
+    marginTop: 20,
+    textAlign: 'center',
+    paddingVertical: 10,
+  paddingHorizontal: 20,
+  borderRadius: 8,
+  },
+  emptyStateText: {
+    fontSize: 14,
+  textAlign: 'center',
+  marginBottom: 3,
+  },
+  emptyStateLinkText: {
+    fontSize: 14,
+  },
 });

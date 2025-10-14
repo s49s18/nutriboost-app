@@ -123,11 +123,11 @@ const AddReminderModal = ({ visible, onClose, nutrients, onSave }) => {
           {/* Zeit Picker */}
           <TouchableOpacity
             onPress={() => setShowTimePicker(true)}
-            style={styles.input}
+            style={[styles.input, {borderColor: theme.iconColor}]}
             >
-            <Text>
+            <ThemedText>
                 {selectedDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-            </Text>
+            </ThemedText>
           </TouchableOpacity>
           {showTimePicker && (
             <DateTimePicker
@@ -142,14 +142,14 @@ const AddReminderModal = ({ visible, onClose, nutrients, onSave }) => {
           {/* Frequenz */}
           <View style={styles.row}>
             <TouchableOpacity onPress={() => setFrequency("daily")}>
-              <Text style={[styles.option, frequency === "daily" && [styles.active, { color: colors.quaternary}]]}>
+              <ThemedText style={[styles.option, frequency === "daily" && [styles.active, { color: colors.quaternary}]]}>
                 Täglich
-              </Text>
+              </ThemedText>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => setFrequency("weekly")}>
-              <Text style={[styles.option, frequency === "weekly" && [styles.active, { color: colors.quaternary }]]}>
+              <ThemedText style={[styles.option, frequency === "weekly" && [styles.active, { color: colors.quaternary }]]}>
                 Wöchentlich
-              </Text>
+              </ThemedText>
             </TouchableOpacity>
           </View>
 
@@ -162,10 +162,11 @@ const AddReminderModal = ({ visible, onClose, nutrients, onSave }) => {
                   style={[
                     styles.dayChip,
                     selectedDays.includes(d.id) && { backgroundColor: colors.secondary },
+                    {borderColor: theme.uiBackground}
                   ]}
                   onPress={() => toggleDay(d.id)}
                 >
-                  <Text style={{ color: selectedDays.includes(d.id) ? "#fff" : "#000" }}>
+                  <Text style={{ color: selectedDays.includes(d.id) ? theme.bwturned : theme.bwturned }}>
                     {d.label}
                   </Text>
                 </TouchableOpacity>

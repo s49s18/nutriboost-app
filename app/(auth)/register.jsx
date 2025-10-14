@@ -48,7 +48,7 @@ export default function Register() {
 
       <Spacer />
       <ThemedText title={true} style={styles.title}>
-        Register an Account
+        Neues Konto anlegen
       </ThemedText>
 
       <ThemedTextInput
@@ -62,7 +62,7 @@ export default function Register() {
 
       <ThemedTextInput
         style={{ width: '80%', marginBottom: 20 }}
-        placeholder="Password"
+        placeholder="Passwort"
         secureTextEntry
         onChangeText={setPassword}
         value={password}
@@ -70,28 +70,28 @@ export default function Register() {
 
       <ThemedTextInput
         style={{ width: '80%', marginBottom: 20 }}
-        placeholder="First Name"
+        placeholder="Vorname"
         onChangeText={setFirstname}
         value={firstname}
       />
 
       <ThemedTextInput
         style={{ width: '80%', marginBottom: 20 }}
-        placeholder="Last Name"
+        placeholder="Nachname"
         onChangeText={setLastname}
         value={lastname}
       />
 
       <Spacer height={20} />
 
-      <ThemedButton onPress={handleSubmit}>
-          <Text style={{ color: '#f2f2f2' }}>Register</Text>
+      <ThemedButton style={{backgroundColor: Colors.secondary, paddingHorizontal: 110}} onPress={handleSubmit}>
+          <Text style={styles.buttonText}>Registrieren</Text>
       </ThemedButton>
 
       <Spacer height={100} />
       <Link href="/login" replace>
         <ThemedText style={{ textAlign: "center" }}>
-          Login instead
+          Zum Login
         </ThemedText>
       </Link>
 
@@ -108,7 +108,13 @@ const styles = StyleSheet.create({
   },
   title: {
     textAlign: "center",
-    fontSize: 18,
-    marginBottom: 30
+    fontSize: 20,
+    marginBottom: 30,
+    fontFamily: 'Comfortaa',
   },
+  buttonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 18,
+  }
 })

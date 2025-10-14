@@ -188,8 +188,9 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   buttonText: {
-    color: '#f2f2f2',
-    fontSize: 16,
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
   loadingContainer: {
     flex: 1,

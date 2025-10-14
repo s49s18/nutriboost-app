@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, Image } from 'react-native'
+import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native'
 import { Link } from 'expo-router'
 import 'react-native-url-polyfill/auto';
 import { useEffect } from 'react';
@@ -49,37 +49,35 @@ const Home = () => {
             Track Your Health, Boost Your Life
           </ThemedText> */}
           <Image source={TitleLogo} style={styles.logo} />
-          <ThemedText style={styles.description}>
+        {/*   <ThemedText style={styles.description}>
             The App to track and know your most important nutrients
-          </ThemedText>
+          </ThemedText> */}
           <Spacer height={20} />
 
           {/* CARD */}
-          <View style={styles.card}>
             {user ? (
-              <>
+              <View style={styles.card}>
                 <Text style={styles.welcome}>
                   Welcome, {user.profile?.firstname} {user.profile?.lastname}
                 </Text>
                 <Text style={styles.email}>Email: {user.email}</Text>
-              </>
+              </View>
             ) : (
               <>
-                <Text style={styles.info}>
+              {/*   <Text style={styles.info}>
                   Please log in to start improving your nutrition!
-                </Text>
+                </Text> */}
                 <Spacer height={15} />
                 <View style={styles.buttonRow}>
-                  <AnimatedLinkButton href="/register" style={[styles.button, { backgroundColor: colors.quinary }]}>
-                    <Text style={styles.buttonText}>Register</Text>
-                  </AnimatedLinkButton>
-                  <AnimatedLinkButton href="/login" style={[styles.button, { backgroundColor: colors.senary }]}>
+                  <TouchableOpacity onPress={() => router.push('/register')} style={[styles.button, { backgroundColor: '#fff', borderColor: '#000', borderWidth: 1, }]}>
+                    <Text style={[styles.buttonText, {color: '#000'}]}>Register</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => router.push('/login')} style={[styles.button, { backgroundColor: '#000' }]}>
                     <Text style={styles.buttonText}>Login</Text>
-                  </AnimatedLinkButton>
+                  </TouchableOpacity>
                 </View>
               </>
             )}
-          </View>
       </ThemedView>
     </ThemedView>
     </SafeAreaView>
@@ -168,6 +166,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   buttonRow: {
+    position: 'absolute',
+    bottom: 20,
+    left: 0,
+    right: 0,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
@@ -175,12 +177,12 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   button: {
-    paddingVertical: 12,
-    paddingHorizontal: 22,
-    borderRadius: 8,
+    paddingVertical: 16,
+    paddingHorizontal: 26,
+    borderRadius: 4,
     alignItems: 'center',
     justifyContent: 'center',
-    width: 140, 
+    width: 188, 
   },
   buttonText: {
     color: '#fff',

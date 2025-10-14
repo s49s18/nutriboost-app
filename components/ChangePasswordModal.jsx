@@ -31,7 +31,7 @@ const ChangePasswordModal = ({ visible, onClose, onSave}) => {
       onRequestClose={onClose}
     >
       <View style={styles.overlay}>
-        <View style={[styles.modalContainer, { backgroundColor: theme.uiBackground }]}>
+        <View style={[styles.modalContainer, { backgroundColor: theme.background }]}>
           <Text style={[styles.title, { color: theme.text }]}>Profil bearbeiten</Text>
 
           <TextInput
@@ -39,12 +39,14 @@ const ChangePasswordModal = ({ visible, onClose, onSave}) => {
             value={newPassword}
             onChangeText={setNewPassword}
             style={[styles.input, { color: theme.text, borderColor: theme.text }]}
+            placeholderTextColor={theme.iconColor}
           />
           <TextInput
             placeholder="Passwort bestätigen"
             value={confirmPassword}
             onChangeText={setConfirmPassword}
             style={[styles.input, { color: theme.text, borderColor: theme.text }]}
+            placeholderTextColor={theme.iconColor}
           />
 
           <View style={styles.buttonRow}>

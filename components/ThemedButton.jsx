@@ -8,7 +8,7 @@ const ThemedButton = ({style, ...props}) => {
   const { colors } = useContext(ColorContext);
   return (
     <Pressable 
-        style={({ pressed }) => [[styles.button, { backgroundColor: pressed ? colors.quaternary: colors.secondary }], pressed && styles.buttonPressed]}
+        style={({ pressed }) => [[styles.button, style, { backgroundColor: pressed ? colors.quaternary : colors.secondary }], pressed && styles.buttonPressed]}
         {...props}
     />
   )
@@ -18,8 +18,8 @@ export default ThemedButton
 
 const styles = StyleSheet.create({
     button: {
-        padding: 15,
-        paddingHorizontal: 30,
+        padding: 18,
+        paddingHorizontal: 80,
         borderRadius: 5,
         alignItems: 'center',
     },

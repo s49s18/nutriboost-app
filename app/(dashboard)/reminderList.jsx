@@ -92,8 +92,9 @@ const ReminderList = () => {
               <TouchableOpacity
                 onPress={() => deleteReminder(item.id, item.notification_ids)}
                 style={styles.deleteButton}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }} 
               >
-                <FontAwesome name="trash" size={18} color={theme.iconColor} />
+                <FontAwesome name="trash" size={19} color={theme.iconColor} />
               </TouchableOpacity>
             </View>
           </View>
@@ -134,13 +135,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '100%',
-    paddingVertical: 10,
+    paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#ccc'
   },
   reminderItemText: { fontSize: 16, fontWeight: '500' },
   reminderStatusContainer: { flexDirection: 'row', alignItems: 'center' },
-  reminderItemStatus: { fontSize: 14, color: '#666', marginRight: 10 },
+  reminderItemStatus: { fontSize: 14, marginRight: 10 },
   addButton: {
     padding: 15,
     borderRadius: 10,

@@ -31,7 +31,7 @@ const ColorModal = ({ visible, onClose, onSave, initialColors }) => {
       onRequestClose={onClose}
     >
       <View style={styles.overlay}>
-        <View style={[styles.modalContainer, { backgroundColor: theme.uiBackground }]}>
+        <View style={[styles.modalContainer, { backgroundColor: theme.background }]}>
           <Text style={[styles.title, { color: theme.bwturned}]}>Farben anpassen  🎨</Text>
 
           <ScrollView style={{ flex: 1 }}>

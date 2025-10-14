@@ -56,6 +56,7 @@ const RootLayout = () => {
   // Fonts werden geladen
   const [fontsLoaded] = useFonts({
     'Montserrat': require('../assets/fonts/Montserrat-VariableFont_wght.ttf'),
+    'Comfortaa': require('../assets/fonts/Comfortaa-VariableFont_wght.ttf'),
     //'MyFont-Bold': require('../assets/fonts/MyFont-Bold.ttf'),
   });
 
