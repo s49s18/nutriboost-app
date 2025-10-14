@@ -106,6 +106,39 @@ export const scheduleReminder = async ({ nutrient, time, frequency, days }) => {
   return notificationIds;
 };
 
+const STREAK_MILESTONE_ID = 'streak_milestone_reminder';
+
+export const scheduleMilestoneNotification = async (currentStreak) => {
+    // 1. Berechtigung prüfen/anfragen
+    const hasPermission = await requestNotificationPermission();
+    if (!hasPermission) {
+        console.log("Benachrichtigungsberechtigung nicht erteilt, kann Meilenstein nicht planen.");
+        return;
+    }
+
+    // 2. Vorherige Meilenstein-Benachrichtigung löschen (wichtig für die Update-Logik)
+    try {
+        await Notifications.cancelScheduledNotificationAsync(STREAK_MILESTONE_ID);
+    } catch (e) {
+        // Ignorieren, falls keine alte gefunden wurde
+    }
+
+    // 3. Neue Meilenstein-Benachrichtigung planen
+    await Notifications.scheduleNotificationAsync({
+        identifier: STREAK_MILESTONE_ID, // Eindeutige ID
+        content: {
+            title: "Streak-Meilenstein erreicht! 🔥",
+            body: `Glückwunsch zur ${currentStreak}-Tage Serie! Mach weiter so!`,
+            data: { streak: currentStreak, type: 'streak_milestone' },
+        },
+        trigger: {
+            // Auslösen in 5 Sekunden, um den Erfolg sofort zu feiern
+            seconds: 5, 
+            repeats: false,
+        },
+    });
+};
+
 export const scheduleDailyReminderIfNeeded = async (currentStreak, allTaken) => {
   // Wenn User schon alles genommen hat, Reminder nicht planen
   if (allTaken) return;

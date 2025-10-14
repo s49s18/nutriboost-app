@@ -17,6 +17,7 @@ import { ColorContext } from '../../contexts/ColorContext';
 import { startOfWeek, endOfWeek, eachDayOfInterval, format } from "date-fns";
 import { useTheme } from '../../contexts/ThemeContext';
 import { Link } from 'expo-router';
+import { scheduleMilestoneNotification } from '../../lib/notifications'; 
 
 const StartScreen = () => {
   const { user } = useContext(UserContext);
@@ -59,19 +60,20 @@ const StartScreen = () => {
    fetchRandomFact();
   }, []);
 
+
+
   useEffect(() => {
     if (currentStreak === 5 || currentStreak === 10) {
-      scheduleStreakReminder(currentStreak, allTaken);
+      scheduleMilestoneNotification(currentStreak);
     }
-  }, [currentStreak, allTaken]);
-
+  }, [currentStreak]);
 
   
   useEffect(() => {
     if (allTaken && !prevAllTaken.current) {
       // nur wenn vorher false und jetzt true
       setShowConfetti(true);
-      setTimeout(() => setShowConfetti(false), 4000);
+      setTimeout(() => setShowConfetti(false), 3000);
     }
 
     prevAllTaken.current = allTaken; // Zustand für nächsten Render merken
@@ -225,16 +227,16 @@ const StartScreen = () => {
       </View>
 
       {/* Confetti */}
-      {showConfetti && (
+     {showConfetti && (
         <ConfettiCannon
-          count={200}           // wie viele Konfetti
-          origin={{x: -20, y: 0}} // Startpunkt 
-          fadeOut={true}        // Konfetti verschwinden
-          explosionSpeed={350}
-          fallSpeed={2500}
-          colors={["#00FF00", "#0000FF", "#FFD700", "#FF69B4"]} // Farben des Konfettis
+            count={150}            
+            origin={{x: -20, y: 0}}
+            fadeOut={true}
+            explosionSpeed={550}    
+            fallSpeed={1600}        
+            colors={["#00FF00", "#0000FF", "#FFD700", "#FF69B4"]}
         />
-      )}
+    )}
 
       {/* Neuer Container für den Fun-Fact */}
       {funFact ? (
