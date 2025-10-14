@@ -230,80 +230,58 @@ export function NutrientsProvider({ children }) {
 
   async function loadCurrentStreak() {
     try {
+      if (!user?.id) return 0;
+
       const { data, error } = await supabase
         .from("user_daily_completion")
         .select("date")
-        .eq("user_id", user?.id)
+        .eq("user_id", user.id)
         .order("date", { ascending: false });
 
-      if (error) {
-        console.warn("Supabase error:", error);
-        return 0;
-      }
+      if (error || !Array.isArray(data)) return 0;
 
-      if (!Array.isArray(data)) {
-        console.error("Unerwarteter Datentyp von Supabase:", data);
-        return 0;
-      }
+      // 1. Alle Datum-Strings, Duplikate entfernen
+      const uniqueDates = [...new Set(
+        data
+          .map(d => d?.date)
+          .filter(Boolean)
+      )];
 
-      console.log("Daten von Supabase:", data);
+      if (uniqueDates.length === 0) return 0;
 
-      // Nur gültige Datumseinträge nehmen
-      const dates = data
-        .map(d => {
-          if (!d?.date || typeof d.date !== "string") return null;
-          const cleanDate = d.date.split("T")[0];
-          const parsed = new Date(cleanDate);
-          return isNaN(parsed.getTime()) ? null : parsed;
-        })
-        .filter(Boolean);
-
-      if (dates.length === 0) return 0;
-
-      // Doppelte entfernen
-      const uniqueDates = [...new Set(dates.map(d => d.toISOString().split("T")[0]))];
-      const dateObjs = uniqueDates.map(d => new Date(d));
-
-      let streak = 1;
+      // 2. Heute und gestern als Strings
       const today = new Date();
       const todayStr = today.toISOString().split("T")[0];
-      const hasToday = uniqueDates.includes(todayStr);
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayStr = yesterday.toISOString().split("T")[0];
 
-      let previous = new Date(hasToday ? todayStr : subtractDays(today, 1));
+      // 3️. Streak Startpunkt
+      let streak = 0;
+      let currentDate;
 
-      for (let i = 0; i < dateObjs.length; i++) {
-        const current = dateObjs[i];
-        if (!current || isNaN(current.getTime())) continue;
-
-        const diffDays = Math.round(
-          (previous - current) / (1000 * 60 * 60 * 24)
-        );
-
-        if (diffDays === 1) {
-          streak++;
-          previous = current;
-        } else if (diffDays === 0) {
-          continue;
-        } else {
-          break;
-        }
+      if (uniqueDates.includes(todayStr)) {
+        currentDate = todayStr; // heute eingetragen
+      } else if (uniqueDates.includes(yesterdayStr)) {
+        currentDate = yesterdayStr; // heute noch nichts, starte bei gestern
+      } else {
+        return 0; // keine Streak aktuell
       }
 
-      if (typeof streak !== "number" || !isFinite(streak)) return 0;
+      // 4️. Streak hochzählen rückwärts
+      while (uniqueDates.includes(currentDate)) {
+        streak++;
+        const d = new Date(currentDate);
+        d.setDate(d.getDate() - 1);
+        currentDate = d.toISOString().split("T")[0];
+      }
+
       return streak;
     } catch (err) {
-      console.error("Fehler beim Laden der aktuellen Streak:", JSON.stringify(err, null, 2));
+      console.error("Fehler beim Laden der Streak:", err);
       return 0;
     }
   }
-
-  function subtractDays(date, days) {
-    const d = new Date(date);
-    if (isNaN(d.getTime())) return new Date();
-    d.setDate(d.getDate() - days);
-    return d;
-  }
-
 
 
   // Neuen Nährstoff erstellen
