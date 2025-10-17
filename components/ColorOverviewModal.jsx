@@ -75,7 +75,7 @@ const ColorOverviewModal = ({ visible, onClose }) => {
           </TouchableOpacity>
 
           <View style={styles.buttonRow}>
-           <Button title="Schließen" onPress={onClose} color={theme.uiBackground} />
+           <Button title="Schließen" onPress={onClose} color={theme.buttonColor} />
           </View>
 
           {selectedColorKey && (
@@ -98,7 +98,8 @@ const ColorOverviewModal = ({ visible, onClose }) => {
         resetColors();
         setConfirmVisible(false);
       }}
-      colors={theme}
+      theme={theme}
+      colors={colors}
     />
   </>
   );

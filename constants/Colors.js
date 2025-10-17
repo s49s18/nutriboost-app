@@ -2,10 +2,10 @@ export const Colors = {
   // Grundfarben für UI-Elemente und Status
   primary: "#49a090", // Dunkles, sattes Grün. Stellt Gesundheit, Natur und Frische dar.
   secondary: "#FFC107", // Helles Gelb-Orange. Symbolisiert Energie, Vitalität und Warnungen.
-  tertiary: "#00BCD4", // Ein sattes Türkis. Kann für Akzente und Hervorhebungen verwendet werden.
+  tertiary: "#28a761ff", //"#00BCD4", // Ein sattes Türkis. Kann für Akzente und Hervorhebungen verwendet werden.
   quaternary: "#E59221", // Ein warmes Orange. Kann für Akzente und Hervorhebungen verwendet werden.
   quinary: "#ADC867",
-  senary: "#28A745",
+  senary: "#8BC34A", //"#4CAF50" ,//"#28a761ff" "#26C6DA",
 
   // Neutraltöne für Text und Hintergrund
   neutral: {
@@ -29,6 +29,7 @@ export const Colors = {
     text: "#E0E0E0", // Sehr helles Grau für gute Lesbarkeit auf dunklem Hintergrund
     title: "#FFFFFF", // Weiß für Überschriften
     iconColor: "#B0B0B0", // Helles Grau für Icons
+    buttonColor: "#B0B0B0",
     iconColorFocused: '#FFFFFF', // Weiß für fokussierte Icons
     highlight: "#E59221", // Akzentfarbe für aktive Elemente und Hervorhebungen
     bw: '#333', // dunkles Grau für Border in dark Mode
@@ -42,6 +43,7 @@ export const Colors = {
     text: "#333333", // Dunkelgrau für Haupttext
     title: "#1A1A1A", // Fast Schwarz für Überschriften
     iconColor: "#666666", // Mittleres Grau für Icons
+    buttonColor: "#B0B0B0",
     iconColorFocused: '#1A1A1A', // Fast Schwarz für fokussierte Icons
     highlight: "#FFC107", // Akzentfarbe für aktive Elemente und Hervorhebungen
     bw: '#fff', // reines Weiß für Border in light Mode

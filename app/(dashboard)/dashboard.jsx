@@ -18,6 +18,7 @@ import { startOfWeek, endOfWeek, eachDayOfInterval, format } from "date-fns";
 import { useTheme } from '../../contexts/ThemeContext';
 import { Link } from 'expo-router';
 import { scheduleMilestoneNotification } from '../../lib/notifications'; 
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const StartScreen = () => {
   const { user } = useContext(UserContext);
@@ -26,13 +27,21 @@ const StartScreen = () => {
   const [currentStreak, setCurrentStreak] = useState(0);
   const trackedNutrientObjects = allNutrients.filter(n => trackedNutrients.includes(n.id));
   const allTaken = trackedNutrients.length > 0 && trackedNutrients.every(id => takenToday[id]);
-  const prevAllTaken = useRef(false); // merkt sich den vorherigen Zustand
+  const prevAllTaken = useRef(false); 
   const [loading, setLoading] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [funFact, setFunFact] = useState('');
   const { colors } = useContext(ColorContext);
   const { themeName } = useTheme();
   const theme = Colors[themeName] ?? Colors.light;
+  const [showResetSnackbar, setShowResetSnackbar] = useState(false);
+  const prevStreak = useRef(currentStreak);
+
+  // Damit beim ersten Laden keine unerwünschten Effekte ausgelöst werden
+  useEffect(() => {
+    prevAllTaken.current = allTaken;
+    prevStreak.current = currentStreak;
+  }, []);
 
   // Effekt, um einen zufälligen Fun-Fact zu laden, wenn die Komponente geladen wird
   useEffect(() => {
@@ -63,21 +72,67 @@ const StartScreen = () => {
 
 
   useEffect(() => {
-    if (currentStreak === 5 || currentStreak === 10) {
-      scheduleMilestoneNotification(currentStreak);
-    }
+    const checkMilestoneNotification = async () => {
+      const milestones = [5, 10, 15, 20, 30, 50];
+      
+      try {
+        // Wenn Streak verloren geht, gespeicherte Meilensteine zurücksetzen
+        if (currentStreak === 0 && prevStreak.current > 0) {
+          await AsyncStorage.removeItem('celebratedMilestones');
+          console.log('Streak zurückgesetzt — Meilensteine gelöscht');
+
+          setShowResetSnackbar(true);
+          setTimeout(() => setShowResetSnackbar(false), 3000);
+          return;
+        }
+         // Wenn der aktuelle Streak ein Meilenstein ist
+        if (milestones.includes(currentStreak)) {
+          const stored = await AsyncStorage.getItem('celebratedMilestones');
+          const celebrated = stored ? JSON.parse(stored) : [];
+
+          if (!celebrated.includes(currentStreak)) {
+            await scheduleMilestoneNotification(currentStreak);
+
+            await AsyncStorage.setItem(
+              'celebratedMilestones',
+              JSON.stringify([...celebrated, currentStreak])
+            );
+          }
+        }
+      } catch (error) {
+        console.error('Fehler beim Handhaben der Meilenstein-Benachrichtigungen:', error);
+      }
+       prevStreak.current = currentStreak;
+    };
+
+    checkMilestoneNotification();
   }, [currentStreak]);
 
-  
   useEffect(() => {
-    if (allTaken && !prevAllTaken.current) {
-      // nur wenn vorher false und jetzt true
-      setShowConfetti(true);
-      setTimeout(() => setShowConfetti(false), 3000);
-    }
+    const checkConfetti = async () => {
+      if (allTaken && !prevAllTaken.current) {
+        try {
+          const today = format(new Date(), 'yyyy-MM-dd');
+          const lastCelebrated = await AsyncStorage.getItem('lastConfettiDate');
 
-    prevAllTaken.current = allTaken; // Zustand für nächsten Render merken
+          if (lastCelebrated !== today) {
+            // 🎉 Nur beim ersten Mal pro Tag
+            setShowConfetti(true);
+            await AsyncStorage.setItem('lastConfettiDate', today);
+
+            setTimeout(() => setShowConfetti(false), 3000);
+          }
+        } catch (error) {
+          console.error('Fehler beim Prüfen der Confetti-Daten:', error);
+        }
+      }
+
+      prevAllTaken.current = allTaken;
+    };
+
+    checkConfetti();
   }, [allTaken]);
+
 
   useEffect(() => {
     const fetchStreak = async () => {
@@ -110,6 +165,11 @@ const StartScreen = () => {
   return (
     <ThemedView style={[styles.container, {flex: 1, justifyContent: 'space-between' }]}>
        <AppHeader />
+       {showResetSnackbar && (
+        <View style={styles.snackbar}>
+          <Text style={styles.snackbarText}>😢 Deine Streak wurde zurückgesetzt!</Text>
+        </View>
+      )}
       <Spacer width={20}/>
         <ThemedView style={styles.card}>
          {/* Kopfzeile */}
@@ -183,13 +243,19 @@ const StartScreen = () => {
               width: "100%",
             }}
           >
-            <View
-              style={[styles.successBox, { backgroundColor: theme.iconColor, }]}
-            >
-              <Text style={[styles.successText, { color: theme.bw}]}>
+            <TouchableOpacity
+            onPress={() => {
+              setShowConfetti(true);
+              setTimeout(() => setShowConfetti(false), 4000);
+            }}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.successBox, { backgroundColor: theme.iconColor }]}>
+              <Text style={[styles.successText, { color: theme.bw }]}>
                 Alle genommen 🎉
               </Text>
             </View>
+          </TouchableOpacity>
           </View>
         )}
       </View>
@@ -233,10 +299,10 @@ const StartScreen = () => {
             origin={{x: -20, y: 0}}
             fadeOut={true}
             explosionSpeed={550}    
-            fallSpeed={1600}        
-            colors={["#00FF00", "#0000FF", "#FFD700", "#FF69B4"]}
+            fallSpeed={1500}        
+            colors={[colors.primary, colors.secondary, colors.tertiary, colors.quintery, colors.quaterny, colors.senary, "#FF69B4", "#e564ffff"]}
         />
-    )}
+     )}
 
       {/* Neuer Container für den Fun-Fact */}
       {funFact ? (
@@ -255,6 +321,24 @@ const StartScreen = () => {
 export default StartScreen;
 
 const styles = StyleSheet.create({
+   snackbar: {
+    position: 'absolute',
+    top: 50,
+    left: 20,
+    right: 20,
+    backgroundColor: '#333',
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderRadius: 8,
+    zIndex: 999,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  snackbarText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 14,
+  },
   container: {
     flex: 1,
     //padding: 20,

@@ -54,7 +54,7 @@ const Nutrients = () => {
                   <FontAwesome
                     name={isTracking ? 'check-square' : 'square-o'}
                     size={30}
-                    color={isTracking ? colors.secondary : Colors.light.iconColor}
+                    color={isTracking ? colors.primary : Colors.light.iconColor}
                   />
                 </TouchableOpacity>
               </TouchableOpacity>

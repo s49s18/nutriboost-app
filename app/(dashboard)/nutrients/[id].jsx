@@ -1,4 +1,4 @@
-import { StyleSheet, View, Image, ScrollView, Text } from 'react-native';
+import { StyleSheet, View, Image, ScrollView, Text,  Linking, TouchableOpacity } from 'react-native';
 import React, { useContext, useState, useEffect } from 'react';
 import { useLocalSearchParams } from 'expo-router';
 import { NutrientsContext } from '../../../contexts/NutrientsContext';
@@ -9,6 +9,7 @@ import Spacer from "../../../components/Spacer";
 import { Colors } from '../../../constants/Colors';
 import ThemedLoader from '../../../components/ThemedLoader';
 import { ColorContext } from '../../../contexts/ColorContext';
+import { MaterialIcons } from '@expo/vector-icons';
 
 const NutrientDetail = () => {
   const { id } = useLocalSearchParams();
@@ -24,8 +25,16 @@ const NutrientDetail = () => {
             setLoading(true);
 
             const data = await fetchNutrientById(id);
+            // JSON-Feld parsen
+            const raw = data?.sources;
+            if (typeof raw === 'string') {
+              try { data.sources = JSON.parse(raw); } 
+              catch (e) { console.error('Fehler beim Parsen der Quellen:', e); data.sources = []; }
+            } else if (!Array.isArray(raw)) {
+              data.sources = [];
+            }
+            
             setNutrient(data);
-
             setLoading(false);
         }
 
@@ -49,7 +58,7 @@ const NutrientDetail = () => {
 
       {/* Titel */}
       <Spacer height={10} />
-      <ThemedText title style={[styles.nutrientTitle, { color: colors.secondary }]}>
+      <ThemedText title style={[styles.nutrientTitle, { color: colors.primary }]}>
         {nutrient.name}
       </ThemedText>
       <ThemedText style={[styles.category, colors.iconColor]}>{nutrient.category}</ThemedText>
@@ -58,7 +67,6 @@ const NutrientDetail = () => {
       <View style={styles.infoCard}>
         <InfoRow label="Min. tägl. Bedarf" value={`${nutrient.min_daily} ${nutrient.unit}`} />
         <InfoRow label="Max. tägl. Bedarf" value={`${nutrient.max_daily} ${nutrient.unit}`} />
-        {nutrient.sources && <InfoRow label="Hauptquellen" value={nutrient.sources} />}
       </View>
 
       <Spacer height={5} />
@@ -115,6 +123,27 @@ const NutrientDetail = () => {
         </>
       )}
 
+      {/* --- Quellen / References --- */}
+      {nutrient.sources && nutrient.sources.length > 0 && (
+      <>
+        <ThemedText style={styles.sectionTitle}>Quellen</ThemedText>
+        {nutrient.sources.map((source, index) => (
+            <View key={index} style={styles.sourceRow}>
+              <Text style={[styles.sourceText, { color: colors.iconColor}]}>
+          {source?.name ?? 'Unbenannte Quelle'}
+              </Text>
+          {source?.url ? (
+                <TouchableOpacity onPress={() => Linking.openURL(source.url)}>
+                  <MaterialIcons name="link" size={20} color={colors.quinary} />
+                </TouchableOpacity>
+              ) : null}
+            </View>
+          ))}
+
+      </>
+    )}
+
+
     </ThemedScrollView>
   );
 };
@@ -149,4 +178,16 @@ const styles = StyleSheet.create({
   infoValue: { fontSize: 15 },
   sectionTitle: { fontWeight: 'bold', fontSize: 18, marginHorizontal: 15, marginTop: 10 },
   text: { fontSize: 15, lineHeight: 22, marginHorizontal: 15 },
+  sourceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginHorizontal: 15,
+    marginBottom: 5,
+  },
+  sourceText: {
+    fontSize: 15,
+    flex: 1,
+    marginRight: 10,
+  },
 });

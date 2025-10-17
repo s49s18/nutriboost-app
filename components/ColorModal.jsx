@@ -57,8 +57,8 @@ const ColorModal = ({ visible, onClose, onSave, initialColors }) => {
           </ScrollView>
 
           <View style={styles.buttonRow}>
-            <Button title="Abbrechen" onPress={onClose} color={theme.uiBackground} />
-            <Button title="Speichern" onPress={handleSave} color={theme.highlight} />
+            <Button title="Abbrechen" onPress={onClose} color={theme.buttonColor} />
+            <Button title="Speichern" onPress={handleSave} color={tempColors.senary} />
           </View>
         </View>
       </View>

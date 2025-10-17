@@ -81,7 +81,7 @@ const Profile = () => {
         </View> */}
          <Spacer height={5} />
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-          <ThemedText style={[styles.headerText, { color: colors.secondary }]} title={true}>
+          <ThemedText style={[styles.headerText, { color: colors.primary }]} title={true}>
              {user.profile.firstname}
           </ThemedText>
           <TouchableOpacity onPress={() => setIsModalVisible(true)}>
@@ -151,7 +151,7 @@ const Profile = () => {
           <Switch
             value={themeName === "dark"}
             onValueChange={toggleTheme}
-            trackColor={{ false: "#767577", true: colors.primary }}
+            trackColor={{ false: "#767577", true: colors.quinary}}
             thumbColor={theme.iconColorFocused}
           />
         </View>
@@ -160,7 +160,7 @@ const Profile = () => {
         {/* Color Picker Modal */}
         {/* Button zum Öffnen */}
         <TouchableOpacity onPress={() => setIsColorModalVisible(true)} style={styles.settingRow}>
-          <MaterialIcons name="palette" size={22} color={colors.primary} />
+          <MaterialIcons name="palette" size={22} color={colors.quinary} />
           <ThemedText style={[styles.settingText]}>Themefarben anpassen</ThemedText>
         </TouchableOpacity>
 

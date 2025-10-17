@@ -103,7 +103,7 @@ const ReminderList = () => {
 
       {/* Button für neuen Reminder */}
       <TouchableOpacity
-        style={[styles.addButton, { backgroundColor: colors.quaternary }]}
+        style={[styles.addButton, { backgroundColor: colors.tertiary }]}
         onPress={() => setIsSetReminderModalVisible(true)}
       >
         <Text style={styles.addButtonText}>Erinnerung hinzufügen</Text>

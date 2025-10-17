@@ -1,13 +1,15 @@
 // components/EditProfileModal.js
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { View, Text, Modal, TextInput, Button, StyleSheet, Alert, TouchableOpacity, Image } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import { Colors } from '../constants/Colors';
 import * as ImagePicker from 'expo-image-picker';
+import { ColorContext } from '../contexts/ColorContext';
 
 const EditProfileModal = ({ visible, onClose, user, onSave }) => {
   const { themeName } = useTheme();
   const theme = themeName === 'light' ? Colors.light : Colors.dark;
+  const { colors } = useContext(ColorContext);
 
   const [firstname, setFirstname] = useState(user?.profile?.firstname || '');
   const [lastname, setLastname] = useState(user?.profile?.lastname || '');
@@ -115,8 +117,8 @@ const EditProfileModal = ({ visible, onClose, user, onSave }) => {
 
 
           <View style={styles.buttonRow}>
-            <Button title="Abbrechen" onPress={onClose} color={theme.uiBackground} />
-            <Button title="Speichern" onPress={handleSave} color={theme.highlight} />
+            <Button title="Abbrechen" onPress={onClose} color={theme.buttonColor} />
+            <Button title="Speichern" onPress={handleSave} color={colors.senary} />
           </View>
         </View>
       </View>

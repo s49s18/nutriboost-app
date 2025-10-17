@@ -1,4 +1,4 @@
-import { StyleSheet, Keyboard, Text, TouchableWithoutFeedback, Pressable } from 'react-native'
+import { StyleSheet, Keyboard, Text, TouchableWithoutFeedback, Pressable, TouchableOpacity, Platform, View } from 'react-native'
 import { Link, useRouter } from 'expo-router' // <-- Import useRouter
 import { useState } from 'react'
 import { useUser } from '../../hooks/useUser'  // <-- Import useUser to access user context
@@ -9,10 +9,12 @@ import ThemedText from '../../components/ThemedText'
 import ThemedButton from '../../components/ThemedButton'
 import Spacer from '../../components/Spacer'
 import ThemedTextInput from '../../components/ThemedTextInput'
+import { MaterialIcons } from '@expo/vector-icons';
 
 export default function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [passwordVisible, setPasswordVisible] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
@@ -46,6 +48,12 @@ export default function Login() {
     return (
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <ThemedView style={styles.container}>
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={() => router.replace('/')}
+            >
+              <MaterialIcons name="keyboard-backspace" size={30} color="black" />
+            </TouchableOpacity>
             <Spacer />
             <ThemedText title={true} style={styles.title}>
                 Bei deinem Konto anmelden
@@ -59,13 +67,32 @@ export default function Login() {
                 value={email}
             />
 
-            <ThemedTextInput
-                style={{ width: '80%', marginBottom: 20 }}
+            
+      <View style={{ width: '80%', position: 'relative', marginBottom: 20 }}>
+              <ThemedTextInput
+                style={{ paddingRight: 40 }} 
                 placeholder="Passwort"
-                secureTextEntry
+                secureTextEntry={!passwordVisible}
                 onChangeText={setPassword}
                 value={password}
-            />
+              />
+              <TouchableOpacity
+                onPress={() => setPasswordVisible(!passwordVisible)}
+                style={{
+                  position: 'absolute',
+                  right: 10,
+                  top: '50%',
+                  transform: [{ translateY: -12 }], 
+                }}
+              >
+                <MaterialIcons
+                  name={passwordVisible ? 'visibility' : 'visibility-off'}
+                  size={24}
+                  color="gray"
+                />
+              </TouchableOpacity>
+            </View>
+                 
              {error && <Text style={styles.error}>{error}</Text>}
 
             <Spacer height={20} />
@@ -122,10 +149,15 @@ const styles = StyleSheet.create({
   error: {
       color: Colors.warning,
       padding: 10,
-      backgroundColor: Colors.warningBackground,
       marginHorizontal: 10,
       borderWidth: 1,
       borderColor: Colors.warning,
       borderRadius: 6,
-  }
+  },
+  backButton: {
+      position: 'absolute',
+      top: Platform.OS === 'ios' ? 60 : 40,
+      left: 20,
+      zIndex: 10,
+    },
 })

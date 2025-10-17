@@ -1,18 +1,23 @@
-import { StyleSheet, Text, Keyboard, TouchableWithoutFeedback } from 'react-native'
+import { StyleSheet, Text, Keyboard, View, KeyboardAvoidingView, ScrollView,  Platform, TouchableWithoutFeedback, Alert, TouchableOpacity } from 'react-native'
 import { Link, useRouter } from 'expo-router'
 import React, { useState } from 'react'
 import { useUser } from '../../hooks/useUser' // <-- Import useUser to access user context
 import { Colors } from '../../constants/Colors'
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 import ThemedTextInput from '../../components/ThemedTextInput'
 import ThemedView from '../../components/ThemedView'
 import ThemedText from '../../components/ThemedText'
 import Spacer from '../../components/Spacer'
 import ThemedButton from '../../components/ThemedButton'
+import { MaterialIcons } from '@expo/vector-icons';
 
 export default function Register() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [passwordVisible, setPasswordVisible] = useState(false);
+    const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
     const [firstname, setFirstname] = useState('');
     const [lastname, setLastname] = useState('');
 
@@ -20,6 +25,12 @@ export default function Register() {
     const { user, register } = useUser();
 
     const handleSubmit = async () => {
+
+      if (password !== confirmPassword) {
+        Alert.alert('Fehler', 'Die Passwörter stimmen nicht überein.');
+        return;
+      }
+
       const result = await register(
         email.trim(),
         password,
@@ -37,14 +48,26 @@ export default function Register() {
         return;
       }
 
-      alert('Registrierung erfolgreich! Du bist eingeloggt.');
+      Alert.alert('Erfolg', 'Registrierung erfolgreich!');
       router.replace('/');
     };
 
 
   return (
    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+     <KeyboardAwareScrollView
+        contentContainerStyle={styles.scrollContainer}
+        enableOnAndroid={true}
+        extraScrollHeight={Platform.OS === 'ios' ? 20 : 80}
+        keyboardShouldPersistTaps="handled"
+      >
     <ThemedView style={styles.container}>
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={() => router.replace('/')}
+      >
+        <MaterialIcons name="keyboard-backspace" size={30} color="black" />
+      </TouchableOpacity>
 
       <Spacer />
       <ThemedText title={true} style={styles.title}>
@@ -60,13 +83,55 @@ export default function Register() {
         value={email}
       />
 
-      <ThemedTextInput
-        style={{ width: '80%', marginBottom: 20 }}
-        placeholder="Passwort"
-        secureTextEntry
-        onChangeText={setPassword}
-        value={password}
-      />
+      <View style={{ width: '80%', position: 'relative', marginBottom: 20 }}>
+        <ThemedTextInput
+          style={{ paddingRight: 40 }} 
+          placeholder="Passwort"
+          secureTextEntry={!passwordVisible}
+          onChangeText={setPassword}
+          value={password}
+        />
+        <TouchableOpacity
+          onPress={() => setPasswordVisible(!passwordVisible)}
+          style={{
+            position: 'absolute',
+            right: 10,
+            top: '50%',
+            transform: [{ translateY: -12 }], 
+          }}
+        >
+          <MaterialIcons
+            name={passwordVisible ? 'visibility' : 'visibility-off'}
+            size={24}
+            color="gray"
+          />
+        </TouchableOpacity>
+      </View>
+
+      <View style={{ width: '80%', position: 'relative', marginBottom: 20 }}>
+        <ThemedTextInput
+          style={{ paddingRight: 40  }}
+          placeholder="Passwort bestätigen"
+          secureTextEntry={!confirmPasswordVisible}
+          onChangeText={setConfirmPassword}
+          value={confirmPassword}
+        />
+        <TouchableOpacity
+          onPress={() => setConfirmPasswordVisible(!confirmPasswordVisible)}
+          style={{
+            position: 'absolute',
+            right: 10,
+            top: '50%',
+            transform: [{ translateY: -12 }],
+          }}
+        >
+          <MaterialIcons
+            name={confirmPasswordVisible ? 'visibility' : 'visibility-off'}
+            size={24}
+            color="gray"
+          />
+        </TouchableOpacity>
+      </View>
 
       <ThemedTextInput
         style={{ width: '80%', marginBottom: 20 }}
@@ -96,11 +161,16 @@ export default function Register() {
       </Link>
 
     </ThemedView>
+     </KeyboardAwareScrollView>
    </TouchableWithoutFeedback>
   )
 }
 
 const styles = StyleSheet.create({
+   scrollContainer: {
+    flexGrow: 1,
+    justifyContent: 'center',
+  },
   container: {
     flex: 1,
     justifyContent: "center",
@@ -116,5 +186,17 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
     fontSize: 18,
-  }
+  },
+  homeIcon: {
+    position: 'absolute',
+    top: 70,
+    left: 30,
+    zIndex: 10,
+  },
+  backButton: {
+    position: 'absolute',
+    top: Platform.OS === 'ios' ? 60 : 40,
+    left: 20,
+    zIndex: 10,
+  },
 })

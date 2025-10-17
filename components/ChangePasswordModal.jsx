@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { View, Text, Modal, TextInput, Button, StyleSheet, TouchableOpacity } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
 import { Colors } from '../constants/Colors';
+import { ColorContext } from '../contexts/ColorContext';
 
 const ChangePasswordModal = ({ visible, onClose, onSave}) => {
   const { themeName } = useTheme();
   const theme = themeName === 'light' ? Colors.light : Colors.dark;
+  const { colors } = useContext(ColorContext);
 
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -32,7 +34,7 @@ const ChangePasswordModal = ({ visible, onClose, onSave}) => {
     >
       <View style={styles.overlay}>
         <View style={[styles.modalContainer, { backgroundColor: theme.background }]}>
-          <Text style={[styles.title, { color: theme.text }]}>Profil bearbeiten</Text>
+          <Text style={[styles.title, { color: theme.text }]}>Passwort ändern</Text>
 
           <TextInput
             placeholder="Neues Passwort"
@@ -50,8 +52,8 @@ const ChangePasswordModal = ({ visible, onClose, onSave}) => {
           />
 
           <View style={styles.buttonRow}>
-            <Button title="Abbrechen" onPress={onClose} color={theme.uiBackground} />
-            <Button title="Speichern" onPress={handleSave} color={theme.highlight} />
+            <Button title="Abbrechen" onPress={onClose} color={theme.buttonColor} />
+            <Button title="Speichern" onPress={handleSave} color={colors.senary} />
           </View>
         </View>
       </View>
