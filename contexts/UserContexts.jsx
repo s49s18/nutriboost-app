@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabaseClient';
 import * as Linking from 'expo-linking';
 import * as FileSystem from 'expo-file-system';
 import { decode } from 'base64-arraybuffer';
+import { AppState } from 'react-native';
 
 // Erstelle den Kontext
 export const UserContext = createContext();
@@ -65,6 +66,16 @@ export const UserProvider = ({ children }) => {
     };
   }, []);
 
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', async s => {
+      if (s === 'active') {
+        const { data: { session } } = await supabase.auth.getSession();
+        await loadUser(session);
+      }
+    });
+    return () => sub.remove();
+  }, []);
+
 
   // Login-Funktion
   async function login(email, password) {
@@ -102,6 +113,11 @@ export const UserProvider = ({ children }) => {
       }
       // Der Zustand wird durch den onAuthStateChange-Listener auf null gesetzt.
       // setLoading hier zu setzen ist unnötig, da der nächste Zustand bereits verarbeitet wird.
+      //router.replace('/');
+      // Fallback: falls onAuthStateChange nicht rechtzeitig reagiert
+      setUser(null);
+      setLoading(false);
+
       return { success: true };
     } catch (err) {
       setLoading(false);

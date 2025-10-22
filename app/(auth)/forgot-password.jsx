@@ -1,4 +1,4 @@
-import { StyleSheet, Keyboard, TouchableWithoutFeedback, Text } from 'react-native';
+import { StyleSheet, Keyboard, TouchableWithoutFeedback, Text, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useUser } from '../../hooks/useUser';
@@ -79,9 +79,9 @@ export default function ForgotPasswordScreen() {
       {error && <ThemedText style={styles.error}>{error}</ThemedText>}
       <Spacer height={100} />
 
-      <ThemedText onPress={() => router.replace('/login')}>
-           Zurück zum Login
-      </ThemedText>
+      <TouchableOpacity onPress={() => router.replace('/login')}>
+          <ThemedText>Zurück zum Login</ThemedText>
+      </TouchableOpacity>
     </ThemedView>
     </TouchableWithoutFeedback>
   );
@@ -107,7 +107,6 @@ const styles = StyleSheet.create({
  error: {
   color: Colors.warning,
   padding: 10,
-  backgroundColor: '#f5c1c8',
   marginHorizontal: 10,
   borderWidth: 1,
   borderColor: Colors.warning,

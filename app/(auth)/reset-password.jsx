@@ -204,7 +204,6 @@ const styles = StyleSheet.create({
   error: {
     color: Colors.warning,
     padding: 10,
-    backgroundColor: '#f5c1c8',
     marginHorizontal: 10,
     borderWidth: 1,
     borderColor: Colors.warning,

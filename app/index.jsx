@@ -28,7 +28,7 @@ const Home = () => {
 
   useEffect(() => {
     if (user) {
-      router.replace('/dashboard');
+      router.replace('/(dashboard)');
     }
   }, [user]);
 

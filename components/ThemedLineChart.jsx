@@ -3,12 +3,24 @@ import { StyleSheet, Dimensions, useColorScheme, View, Text } from 'react-native
 import { LineChart } from 'react-native-chart-kit';
 import { Colors } from '../constants/Colors';
 import { useTheme } from '../contexts/ThemeContext';
+import ThemedLoader from '../components/ThemedLoader';
 
 const screenWidth = Dimensions.get('window').width;
 
 const ThemedLineChart = ({ data }) => {
   const { themeName } = useTheme();
   const theme = themeName === 'dark' ? Colors.dark : Colors.light;
+
+  if (
+    !data ||
+    !data.datasets ||
+    data.datasets.length === 0 ||
+    !data.datasets[0].data ||
+    data.datasets[0].data.length === 0 ||
+    data.datasets[0].data.some((v) => !isFinite(v))
+  ) {
+    return <ThemedLoader/>;
+  }
 
   const chartConfig = {
     backgroundColor: theme.uiBackground,
@@ -54,7 +66,6 @@ const ThemedLineChart = ({ data }) => {
       width={screenWidth * 0.9}
       height={220}
       chartConfig={chartConfig}
-      bezier
       style={styles.lineChart}
       formatXLabel={(label) => label}
     />

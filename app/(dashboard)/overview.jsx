@@ -4,6 +4,7 @@ import ThemedText from '../../components/ThemedText';
 import ThemedView from '../../components/ThemedView';
 import ThemedHeader from '../../components/ThemedHeader';
 import ThemedLineChart from '../../components/ThemedLineChart';
+import ThemedLoader from '../../components/ThemedLoader';
 import Spacer from '../../components/Spacer';
 import { Colors } from '../../constants/Colors';
 import { UserContext } from '../../contexts/UserContexts';
@@ -14,6 +15,8 @@ import { format, subDays, startOfDay } from 'date-fns';
 import { supabase } from '../../lib/supabaseClient';
 import { differenceInDays, differenceInMonths, subMonths } from 'date-fns';
 import { ColorContext } from "../../contexts/ColorContext";
+import ThemedAdherenceHeatmap from '../../components/ThemedAdherenceHeatmap';
+
 
 
 const screenWidth = Dimensions.get('window').width;
@@ -23,26 +26,43 @@ const SupplementOverviewScreen = () => {
   const { allNutrients, trackedNutrients } = useContext(NutrientsContext);
   const { colors } = useContext(ColorContext);
 
-  const trackedNutrientObjects = allNutrients.filter(n => trackedNutrients.includes(n.id));
+  //const trackedNutrientObjects = allNutrients.filter(n => trackedNutrients.includes(n.id));
 
   const [selectedNutrient, setSelectedNutrient] = useState(null);
   const [intakeData, setIntakeData] = useState(null);
   const [message, setMessage] = useState('');
-  const [timeRange, setTimeRange] = useState('7 Tage'); // '7 Tage', '30 Tage', '180 Tage', '365 Tage'
+  const [isLoading, setIsLoading] = useState(false);
+  const [heatmapValues, setHeatmapValues] = useState(null);
+  const [adherenceRate, setAdherenceRate] = useState(null);
+  const SQUARE = 18;
+  const GUTTER = 3;
+
+  // Wieviele Wochen passen in die verfügbare Breite (0.9 * Screen)?
+  const weeksThatFit = Math.max(
+    1,
+    Math.floor((screenWidth * 0.75 + GUTTER) / (SQUARE + GUTTER))
+  );
+
+  const [timeRange, setTimeRange] = useState('Wochen'); // '7 Tage', '30 Tage', '180 Tage', '365 Tage'
 
   const getStartDate = () => {
     const today = new Date();
     switch (timeRange) {
-      case '30 Tage':
-        return subDays(today, 29);
+      case '3 Monate':
+        return subMonths(today, 3);
       case '6 Monate':
-        return subDays(today, 179);
+        return subMonths(today, 6);
       case '1 Jahr':
-        return subDays(today, 364);
-      default:
-        return subDays(today, 6);
+        return subMonths(today, 12);
+      case 'Wochen':
+      default: {
+        // so viele Wochen zurück, wie rechts in die Breite passen
+        const days = weeksThatFit * 7 - 1;
+        return subDays(today, days);
+      }
     }
   };
+
 
   const fetchAndFormatIntakeData = async (nutrientId) => {
     if (!user || !nutrientId) return;
@@ -58,23 +78,33 @@ const SupplementOverviewScreen = () => {
         .gte('date', format(startOfDay(startDate), 'yyyy-MM-dd'));
 
       if (error) throw error;
+      
+      // --- Heatmap-Werte (0/1 pro Tag) ---
+      const daysDiff = differenceInDays(new Date(), startDate);
+      const dayMap = {};
+
+      for (let i = daysDiff; i >= 0; i--) {
+        const d = subDays(new Date(), i);
+        const key = format(d, 'yyyy-MM-dd');
+        dayMap[key] = 0;
+      }
+
+      rawIntakes.forEach(intake => {
+        const key = format(new Date(intake.date), 'yyyy-MM-dd');
+        if (dayMap[key] !== undefined) dayMap[key] = 1; // binär
+      });
+
+      const heatVals = Object.entries(dayMap).map(([date, count]) => ({ date, count }));
+      setHeatmapValues(heatVals);
 
       let labels = [];
       let groupedIntakes = {};
 
-      if (timeRange === '7 Tage' || timeRange === '30 Tage') {
-        // Gruppierung nach Tagen
-        for (let i = differenceInDays(new Date(), startDate); i >= 0; i--) {
-          const date = subDays(new Date(), i);
-          const label = format(date, timeRange === '7 Tage' ? 'EE' : 'dd.MM');
-          labels.push(label);
-          groupedIntakes[label] = 0;
-        }
-
-        rawIntakes.forEach(intake => {
-          const label = format(new Date(intake.date), timeRange === '7 Tage' ? 'EE' : 'dd.MM');
-          if (groupedIntakes[label] !== undefined) groupedIntakes[label] += 1;
-        });
+      if (timeRange === 'Wochen' || timeRange === '3 Monate') {
+        // Adherence-Rate (Tage mit Einnahme / Gesamt-Tage)
+        const takenDays = Object.values(dayMap).reduce((a, b) => a + b , 0);
+        const totalDays = Object.values(dayMap).length;
+        setAdherenceRate(totalDays ? Math.round((takenDays / totalDays) * 100) : 0);
 
       } else {
         // Gruppierung nach Monaten
@@ -119,10 +149,33 @@ const SupplementOverviewScreen = () => {
 
 
   useEffect(() => {
+    let isActive = true;
+
     if (selectedNutrient) {
-      fetchAndFormatIntakeData(selectedNutrient.id);
+      const fetchData = async () => {
+        setIntakeData(null);
+        setHeatmapValues(null);
+        setAdherenceRate(null);
+        setIsLoading(true);
+
+        try {
+          await fetchAndFormatIntakeData(selectedNutrient.id);
+        } catch (err) {
+          if (isActive) console.error('Fehler beim Laden der Daten:', err);
+        } finally {
+          if (isActive) setIsLoading(false);
+        }
+      };
+
+      fetchData();
     }
+
+    return () => {
+      isActive = false; // Cleanup → verhindert setState auf unmounted component
+    };
   }, [selectedNutrient, timeRange]);
+
+  
 
   return (
     <ThemedView style={styles.container}>
@@ -135,7 +188,7 @@ const SupplementOverviewScreen = () => {
         <ThemedText style={styles.sectionTitle}>Wähle einen Nährstoff:</ThemedText>
         <FlatList
           horizontal
-          data={trackedNutrientObjects}
+          data={allNutrients}
           keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => (
             <TouchableOpacity
@@ -156,7 +209,7 @@ const SupplementOverviewScreen = () => {
 
       {/* Zeitraum-Buttons */}
       <View style={styles.rangeButtonContainer}>
-        {['7 Tage', '30 Tage', '6 Monate', '1 Jahr'].map(range => (
+         {['Wochen','3 Monate','6 Monate','1 Jahr'].map(range => (
           <TouchableOpacity
             key={range}
             style={[
@@ -169,9 +222,7 @@ const SupplementOverviewScreen = () => {
               styles.rangeButtonText,
               timeRange === range && styles.selectedRangeButtonText
             ]}>
-              {range === '7 Tage' ? '7 Tage' :
-               range === '30 Tage' ? '30 Tage' :
-               range === '6 Monate' ? '6 Monate' : '1 Jahr'}
+              {range}
             </Text>
           </TouchableOpacity>
         ))}
@@ -179,16 +230,59 @@ const SupplementOverviewScreen = () => {
 
       <Spacer/>
 
-      {/* Diagramm-Anzeige */}
-      {intakeData ? (
-        <View style={styles.chartContainer}>
-          <ThemedText style={styles.chartTitle}>
-            {selectedNutrient.name} Einnahme ({timeRange})
-          </ThemedText>
-          <ThemedLineChart data={intakeData} />
-        </View>
+     {/* Diagramm-Anzeige */}
+     {isLoading ? (
+      <ThemedLoader />
+      ) : selectedNutrient ? (
+        <>
+          {(timeRange === 'Wochen' || timeRange === '3 Monate') && heatmapValues ? (
+            <View style={styles.chartContainer}>
+              <ThemedText style={styles.chartTitle}>
+                {selectedNutrient.name} - {timeRange} (Adherence{adherenceRate !== null ? `: ${adherenceRate}%` : ''})
+              </ThemedText>
+
+              {/** numDays-Berechnung **/}
+              {(() => {
+                const endDate = new Date();
+                const startDate = getStartDate();
+                const numDays =
+                  timeRange === 'Wochen'
+                    ? weeksThatFit * 7
+                    : differenceInDays(endDate, startDate) + 1; // ≈ 3 Monate
+
+                // Optional: falls du sicherstellen willst, dass volle Wochen dargestellt werden:
+                const numDaysAligned = Math.ceil(numDays / 7) * 7;
+
+                return (
+                  <ThemedAdherenceHeatmap
+                    values={heatmapValues}
+                    numDays={numDaysAligned}
+                    endDate={endDate}
+                    squareSize={SQUARE}
+                    gutterSize={GUTTER}
+                    // width bleibt bei 0.9 * screenWidth; wenn du exakt pixelgenau willst:
+                    // width={(Math.ceil(numDaysAligned/7) * (SQUARE + GUTTER)) - GUTTER}
+                  />
+                );
+              })()}
+            </View>
+          ) : intakeData ? (
+            <View style={styles.chartContainer}>
+              <ThemedText style={styles.chartTitle}>
+                {selectedNutrient.name} Einnahme ({timeRange})
+              </ThemedText>
+              <ThemedLineChart data={intakeData} />
+            </View>
+          ) : (
+            <ThemedText style={styles.message}>
+              Keine Daten im gewählten Zeitraum.
+            </ThemedText>
+          )}
+        </>
       ) : (
-        <ThemedText style={styles.message}>Wähle einen Nährstoff, um die Einnahmen anzuzeigen.</ThemedText>
+        <ThemedText style={styles.message}>
+          Wähle einen Nährstoff, um die Einnahmen anzuzeigen.
+        </ThemedText>
       )}
     </ThemedView>
   );

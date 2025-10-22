@@ -154,11 +154,10 @@ export default function Register() {
       </ThemedButton>
 
       <Spacer height={100} />
-      <Link href="/login" replace>
-        <ThemedText style={{ textAlign: "center" }}>
-          Zum Login
-        </ThemedText>
-      </Link>
+
+      <TouchableOpacity onPress={() => router.replace('/login')}>
+                <ThemedText> Zum Login</ThemedText>
+      </TouchableOpacity>
 
     </ThemedView>
      </KeyboardAwareScrollView>

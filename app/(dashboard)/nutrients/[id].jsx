@@ -9,12 +9,16 @@ import Spacer from "../../../components/Spacer";
 import { Colors } from '../../../constants/Colors';
 import ThemedLoader from '../../../components/ThemedLoader';
 import { ColorContext } from '../../../contexts/ColorContext';
+import { useTheme } from '../../../contexts/ThemeContext';
 import { MaterialIcons } from '@expo/vector-icons';
+
 
 const NutrientDetail = () => {
   const { id } = useLocalSearchParams();
   const { fetchNutrientById } = useContext(NutrientsContext);
   const { colors } = useContext(ColorContext);
+  const { themeName } = useTheme();
+  const theme = Colors[themeName] ?? Colors.light;
 
   const [nutrient, setNutrient] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -129,7 +133,7 @@ const NutrientDetail = () => {
         <ThemedText style={styles.sectionTitle}>Quellen</ThemedText>
         {nutrient.sources.map((source, index) => (
             <View key={index} style={styles.sourceRow}>
-              <Text style={[styles.sourceText, { color: colors.iconColor}]}>
+              <Text style={[styles.sourceText, { color: theme.iconColor}]}>
           {source?.name ?? 'Unbenannte Quelle'}
               </Text>
           {source?.url ? (

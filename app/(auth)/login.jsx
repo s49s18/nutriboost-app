@@ -99,21 +99,20 @@ export default function Login() {
           {/*   <ThemedButton style={{paddingHorizontal: 140}} onPress={handleSubmit}>
                 <Text style={styles.buttonText}>Login</Text>
             </ThemedButton> */}
-            <Pressable style={[styles.button]} onPress={handleSubmit}>
+            <TouchableOpacity style={[styles.button]} onPress={handleSubmit}>
               <Text style={styles.buttonText}>Login</Text>
-            </Pressable>
+            </TouchableOpacity>
             <Spacer height={20}/>
-            <Pressable onPress={() => router.push('/forgot-password')}>
+            <TouchableOpacity onPress={() => router.push('/forgot-password')}>
               <ThemedText style={styles.link}>Passwort vergessen?</ThemedText>
-            </Pressable>
+            </TouchableOpacity>
             <Spacer />
 
             <Spacer height={100} />
-            <Link href="/register" replace>
-                <ThemedText style={{ textAlign: "center" }}>
-                    Zur Registrierung
-                </ThemedText>
-            </Link>
+        
+            <TouchableOpacity onPress={() => router.replace('/register')}>
+                <ThemedText>Zur Registrierung</ThemedText>
+            </TouchableOpacity>
         </ThemedView>
       </TouchableWithoutFeedback>
     )
