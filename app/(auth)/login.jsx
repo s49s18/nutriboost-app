@@ -10,6 +10,7 @@ import ThemedButton from '../../components/ThemedButton'
 import Spacer from '../../components/Spacer'
 import ThemedTextInput from '../../components/ThemedTextInput'
 import { MaterialIcons } from '@expo/vector-icons';
+import GuestOnly from '../../components/auth/GuestOnly'
 
 export default function Login() {
     const [email, setEmail] = useState('');
@@ -46,6 +47,7 @@ export default function Login() {
     }
 
     return (
+      <GuestOnly>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <ThemedView style={styles.container}>
             <TouchableOpacity
@@ -115,6 +117,7 @@ export default function Login() {
             </TouchableOpacity>
         </ThemedView>
       </TouchableWithoutFeedback>
+      </GuestOnly>
     )
 }
 

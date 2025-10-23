@@ -9,7 +9,7 @@ const UserOnly = ({children}) => {
 
     useEffect(() => {
         if (!loading && user === null) {
-            router.replace('/login')
+            router.replace('/')
         }
     }, [ user, loading])
 

@@ -16,6 +16,7 @@ import Spacer from '../components/Spacer'
 import ThemedText from '../components/ThemedText'
 import { Colors } from '../constants/Colors';
 import TitleLogo from '../assets/img/title_logo_neutral.png'
+import ThemedLoader from '../components/ThemedLoader';
 
 const Home = () => {
 

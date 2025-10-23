@@ -6,7 +6,7 @@ import ThemedView from '../../components/ThemedView';
 import ThemedCard from '../../components/ThemedCard';
 import { FontAwesome } from '@expo/vector-icons';
 import { Colors } from '../../constants/Colors';
-import { useUser } from '../hooks/useUser';
+import { useUser } from '../../hooks/useUser';
 import ThemedLoader from '../../components/ThemedLoader';
 import { NutrientsContext } from '../../contexts/NutrientsContext';
 import Spacer from '../../components/Spacer';
