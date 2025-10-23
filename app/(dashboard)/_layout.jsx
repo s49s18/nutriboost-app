@@ -31,7 +31,7 @@ export default function DashboardLayout() {
         />
         <Tabs.Screen 
           name="overview"
-          options={{ title: "Overview", tabBarIcon: ({ color, focused }) => <Ionicons name={focused ? "bar-chart" : "bar-chart-outline"} color={color} size={24} /> }} 
+          options={{ title: "Charts", tabBarIcon: ({ color, focused }) => <Ionicons name={focused ? "bar-chart" : "bar-chart-outline"} color={color} size={24} /> }} 
         />
         <Tabs.Screen 
           name="reminderList"
@@ -39,7 +39,7 @@ export default function DashboardLayout() {
         />
         <Tabs.Screen 
           name="profile"
-          options={{ title: "Profile", tabBarIcon: ({ color, focused }) => <Ionicons name={focused ? "person" : "person-outline"} color={color} size={24} /> }} 
+          options={{ title: "Settings", tabBarIcon: ({ color, focused }) => <Ionicons name={focused ? "settings" : "settings-outline"} color={color} size={24} /> }} 
         />
       </Tabs>
       </SafeAreaView>

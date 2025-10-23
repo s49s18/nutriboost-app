@@ -3,7 +3,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { Link } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 
-import { UserContext } from '../../../contexts/UserContexts';
+import { useUser } from '../../../hooks/useUser';
 import { NutrientsContext } from '../../../contexts/NutrientsContext';
 
 import ThemedView from '../../../components/ThemedView';
@@ -15,7 +15,7 @@ import { Colors } from '../../../constants/Colors';
 import { ColorContext } from '../../../contexts/ColorContext';
 
 const Nutrients = () => {
-  const { user } = useContext(UserContext);
+  const { user } = useUser();
   const { allNutrients, trackedNutrients, toggleTrackedNutrient, loadingTracked, loadingAll} = useContext(NutrientsContext);
   const { colors } = useContext(ColorContext);
 
@@ -44,6 +44,11 @@ const Nutrients = () => {
                   <Text style={styles.cardDescription}>
                     Tagesbedarf: {nutrient.min_daily} - {nutrient.max_daily} {nutrient.unit}
                   </Text>
+                   <Link href={`/nutrients/${nutrient.id}`} asChild>
+                    <TouchableOpacity style={styles.detailsButton}>
+                      <Text style={[styles.cardLink, { color: colors.primary }]}>Details</Text>
+                    </TouchableOpacity>
+                  </Link>
                 </View>
 
                 <TouchableOpacity
@@ -113,5 +118,11 @@ const styles = StyleSheet.create({
   },
   checkboxContainer: {
     paddingLeft: 15,
+  },
+  cardLink: {
+    marginTop: 5,
+    paddingLeft: 3,
+    fontSize: 12,
+    textDecorationLine: 'underline',
   },
 });

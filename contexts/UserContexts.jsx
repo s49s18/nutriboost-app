@@ -4,12 +4,14 @@ import * as Linking from 'expo-linking';
 import * as FileSystem from 'expo-file-system';
 import { decode } from 'base64-arraybuffer';
 import { AppState } from 'react-native';
+import { useRouter } from 'expo-router';
 
 // Erstelle den Kontext
 export const UserContext = createContext();
 
 // Erstelle den User-Provider
 export const UserProvider = ({ children }) => {
+  const router = useRouter();
   const [user, setUser] = useState(null); // enthält jetzt Auth- und Profil-Daten
   const [loading, setLoading] = useState(true);
 
@@ -54,7 +56,7 @@ export const UserProvider = ({ children }) => {
     handleSession();
 
     // Listener für An- und Abmeldungen
-    const { data: listener } = supabase.auth.onAuthStateChange(
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
         await loadUser(session);
       }
@@ -62,7 +64,7 @@ export const UserProvider = ({ children }) => {
 
     // Bereinigung des Listeners, wenn die Komponente entfernt wird
     return () => {
-      listener.subscription.unsubscribe();
+     if (subscription) subscription.unsubscribe();
     };
   }, []);
 
@@ -113,15 +115,13 @@ export const UserProvider = ({ children }) => {
       }
       // Der Zustand wird durch den onAuthStateChange-Listener auf null gesetzt.
       // setLoading hier zu setzen ist unnötig, da der nächste Zustand bereits verarbeitet wird.
-      //router.replace('/');
       // Fallback: falls onAuthStateChange nicht rechtzeitig reagiert
       setUser(null);
       setLoading(false);
-
       return { success: true };
     } catch (err) {
       setLoading(false);
-      return { success: false, error: err.message || 'Unbekannter Fehler' };
+      return { success: false, error: err.message};
     }
   }
 

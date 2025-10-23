@@ -4,12 +4,12 @@ import { Link, usePathname } from 'expo-router';
 import ThemedView from './ThemedView';
 import ThemedLogo from './ThemedLogo';
 import ThemedText from './ThemedText';
-import { UserContext } from '../contexts/UserContexts';
+import { useUser } from '../hooks/useUser';
 import { Colors } from '../constants/Colors';
 import { useTheme } from '../contexts/ThemeContext';
 
 const AppHeader = () => {
-  const { user, logout } = useContext(UserContext);
+  const { user, logout } = useUser();
   const pathname = usePathname(); // Aktuelle Route ermitteln
   const { themeName } = useTheme();
   const theme = Colors[themeName] ?? Colors.light;

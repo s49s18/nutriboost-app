@@ -1,6 +1,6 @@
 import { StyleSheet, Text, useColorScheme, View } from 'react-native'
 import { usePathname } from 'expo-router';
-import { Stack, useSegments } from 'expo-router';
+import { Stack, Redirect } from 'expo-router';
 import { Colors } from '../constants/Colors'
 import { UserProvider } from '../contexts/UserContexts'
 import { NutrientsProvider } from '../contexts/NutrientsContext'
@@ -10,9 +10,10 @@ import { ColorProvider } from '../contexts/ColorContext';
 import { NotificationPermissionProvider } from '../contexts/NotificationPermissionProvider';
 import { useFonts } from 'expo-font';
 import { useEffect } from 'react';
-import { user } from '../hooks/useUser';
+import { useUser } from '../hooks/useUser';
 import * as SplashScreen from 'expo-splash-screen';
 import * as Notifications from 'expo-notifications';
+import ThemedLoader from '../components/ThemedLoader';
 
 
 Notifications.setNotificationHandler({
@@ -31,26 +32,22 @@ const AppWrapper = () => {
   // useTheme hier funktioniert, weil wir innerhalb von ThemeProvider sind
   const { themeName } = useTheme();
   const theme = themeName === 'light' ? Colors.light : Colors.dark;
+  const { user, loading } = useUser();
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.background }]}>
+     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <Stack
         screenOptions={{
-          headerShown: false, // gilt für alle Screens
+          headerShown: false,
         }}
       >
-        {user ? (
-          <Stack.Screen name="(dashboard)" />
-        ) : (
-          <>
-            <Stack.Screen name="index" />
-            <Stack.Screen name="(auth)" />
-          </>
-        )}
+       <Stack.Screen name="index" />
+        <Stack.Screen name="(auth)" />
+        <Stack.Screen name="(dashboard)" />
       </Stack>
-    </View>
-  );
-};
+     </View>
+   );
+ };
 
 const RootLayout = () => {
   // Fonts werden geladen

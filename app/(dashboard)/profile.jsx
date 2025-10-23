@@ -5,7 +5,7 @@ import { Link } from 'expo-router';
 import Spacer from "../../components/Spacer"
 import ThemedText from "../../components/ThemedText"
 import ThemedView from "../../components/ThemedView"
-import { UserContext } from '../../contexts/UserContexts';
+import { useUser } from '../../hooks/useUser';
 import ThemedLoader from '../../components/ThemedLoader';
 import { Colors } from '../../constants/Colors';
 import { NutrientsContext } from '../../contexts/NutrientsContext';
@@ -18,7 +18,7 @@ import ColorOverviewModal from "../../components/ColorOverviewModal";
 import { ColorContext } from "../../contexts/ColorContext";
 
 const Profile = () => {
-  const { user, updateProfile, updateUser, deleteUser, deleteProfile } = useContext(UserContext);
+  const { user, updateProfile, updateUser, deleteUser, deleteProfile } =  useUser();
   const { allNutrients, trackedNutrients } = useContext(NutrientsContext);
   const { themeName, toggleTheme } = useTheme();
   const theme = themeName === "light" ? Colors.light : Colors.dark;

@@ -1,12 +1,12 @@
 import React, { createContext, useState, useEffect, useContext } from "react";
 import {Colors } from "../constants/Colors";
 import { supabase } from "../lib/supabaseClient";
-import { UserContext } from "./UserContexts";
+import { useUser } from '../hooks/useUser';
 
 export const ColorContext = createContext();
 
 export const ColorProvider = ({ children }) => {
-  const { user } = useContext(UserContext);
+  const { user } = useUser();
   const [customColors, setCustomColors] = useState({});
   const [loading, setLoading] = useState(false);
 

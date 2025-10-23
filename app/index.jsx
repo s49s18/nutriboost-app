@@ -1,10 +1,10 @@
 import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native'
-import { Link } from 'expo-router'
+import { Link, Redirect } from 'expo-router'
 import 'react-native-url-polyfill/auto';
 import { useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { useContext } from 'react';
-import { UserContext } from '../contexts/UserContexts';
+import { useUser } from '../hooks/useUser';
 import { ColorContext } from '../contexts/ColorContext';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
@@ -22,17 +22,22 @@ const Home = () => {
   const imageUrl = 'https://yekfgrbbsvfimdaokldr.supabase.co/storage/v1/object/sign/assets/headerImage.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9lM2I3MTU2ZC0zZTliLTQ4ZDAtOGQwMS02OWIyODMxOTk0MzYiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJhc3NldHMvaGVhZGVySW1hZ2UuanBnIiwiaWF0IjoxNzU1MTgwMjY0LCJleHAiOjE3ODY3MTYyNjR9.AIcq5WkmBgil09K10YsKOaLboesih7Mi-v7-JsyLc3U'
   const imageUrl2 = 'https://yekfgrbbsvfimdaokldr.supabase.co/storage/v1/object/sign/assets/header2%20(1).jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9lM2I3MTU2ZC0zZTliLTQ4ZDAtOGQwMS02OWIyODMxOTk0MzYiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJhc3NldHMvaGVhZGVyMiAoMSkuanBnIiwiaWF0IjoxNzU1MTgyMzMyLCJleHAiOjE3ODY3MTgzMzJ9.UI-keEYYrilIrtRUlp4oKSRPi8p2qlAzTAs-ZfaTAcI'
 
-  const { user } = useContext(UserContext);
+  const { user, loading } = useUser();
   const { colors } = useContext(ColorContext);
   const router = useRouter();
 
-  useEffect(() => {
+  /* useEffect(() => {
     if (user) {
-      router.replace('/(dashboard)');
+      router.replace('/dashboard');
     }
-  }, [user]);
-
-  return (
+  }, [user]);  */
+  if (loading) {
+    return (
+      <ThemedLoader />
+    );
+  }
+  return user ? <Redirect href="/dashboard" /> : (
+  
     <SafeAreaProvider>
     <SafeAreaView style={{ flex: 1 }}>
     <ThemedView style={styles.container}>
@@ -70,7 +75,7 @@ const Home = () => {
                 <Spacer height={15} />
                 <View style={styles.buttonRow}>
                   <TouchableOpacity onPress={() => router.push('/register')} style={[styles.button, { backgroundColor: '#fff', borderColor: '#000', borderWidth: 1, }]}>
-                    <Text style={[styles.buttonText, {color: '#000'}]}>Register</Text>
+                    <Text style={[styles.buttonText, {color: '#000'}]}>Registrieren</Text>
                   </TouchableOpacity>
                   <TouchableOpacity onPress={() => router.push('/login')} style={[styles.button, { backgroundColor: '#000' }]}>
                     <Text style={styles.buttonText}>Login</Text>

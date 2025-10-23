@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { View, StyleSheet, TouchableOpacity, FlatList, Text, Dimensions, Alert } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, FlatList, Text, Dimensions, Alert,  ScrollView } from 'react-native';
 import ThemedText from '../../components/ThemedText';
 import ThemedView from '../../components/ThemedView';
 import ThemedHeader from '../../components/ThemedHeader';
@@ -7,7 +7,7 @@ import ThemedLineChart from '../../components/ThemedLineChart';
 import ThemedLoader from '../../components/ThemedLoader';
 import Spacer from '../../components/Spacer';
 import { Colors } from '../../constants/Colors';
-import { UserContext } from '../../contexts/UserContexts';
+import { useUser } from '../../hooks/useUser';
 import { NutrientsContext } from '../../contexts/NutrientsContext';
 import { createClient } from '@supabase/supabase-js';
 import { LineChart } from 'react-native-chart-kit';
@@ -21,8 +21,13 @@ import ThemedAdherenceHeatmap from '../../components/ThemedAdherenceHeatmap';
 
 const screenWidth = Dimensions.get('window').width;
 
+const RANGE_PRESETS = {
+  'Wochen':    { weeks: 10,  square: 22, gutter: 4, scrollable: false },
+  '3 Monate':  { weeks: 12, square: 18, gutter: 5, scrollable: false },
+};
+
 const SupplementOverviewScreen = () => {
-  const { user } = useContext(UserContext);
+  const { user } = useUser();
   const { allNutrients, trackedNutrients } = useContext(NutrientsContext);
   const { colors } = useContext(ColorContext);
 
@@ -34,8 +39,50 @@ const SupplementOverviewScreen = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [heatmapValues, setHeatmapValues] = useState(null);
   const [adherenceRate, setAdherenceRate] = useState(null);
-  const SQUARE = 18;
-  const GUTTER = 3;
+ /*  const SQUARE = 18;
+  const GUTTER = 3;*/
+
+   const computeStreaks = (list = []) => {
+    let cur = 0, best = 0;
+    for (const v of list) {
+      if (v.count > 0) {
+        cur += 1;
+        best = Math.max(best, cur);
+      } else {
+        cur = 0;
+      }
+    }
+    return { current: cur, best };
+  };
+
+  // Week-Adherence pro 7 Tage-Block
+  const computeWeekAdherence = (list = []) => {
+    const blocks = [];
+    let buf = [];
+    for (let i = list.length - 1; i >= 0; i--) {
+      buf.push(list[i].count);
+      if (buf.length === 7) {
+        blocks.unshift(Math.round((buf.reduce((a,b)=>a+b,0)/7)*100));
+        buf = [];
+      }
+    }
+    if (buf.length) {
+      const pct = Math.round((buf.reduce((a,b)=>a+b,0)/buf.length)*100);
+      blocks.unshift(pct);
+    }
+    return blocks;
+  };
+
+  // Wochentags-Verteilung
+  const weekdayHistogram = (list = []) => {
+    const out = Array(7).fill(0);
+    list.forEach(v => {
+      const d = new Date(v.date);
+      const wd = d.getDay(); // 0 So ... 6 Sa
+      out[wd] += v.count;
+    });
+    return out; // [So..Sa]
+  };
 
   // Wieviele Wochen passen in die verfügbare Breite (0.9 * Screen)?
   const weeksThatFit = Math.max(
@@ -44,8 +91,11 @@ const SupplementOverviewScreen = () => {
   );
 
   const [timeRange, setTimeRange] = useState('Wochen'); // '7 Tage', '30 Tage', '180 Tage', '365 Tage'
+  const preset = RANGE_PRESETS[timeRange] ?? { square: 16, gutter: 3, scrollable: false };
+  const SQUARE = preset.square;
+  const GUTTER = preset.gutter;
 
-  const getStartDate = () => {
+ /*  const getStartDate = () => {
     const today = new Date();
     switch (timeRange) {
       case '3 Monate':
@@ -61,12 +111,28 @@ const SupplementOverviewScreen = () => {
         return subDays(today, days);
       }
     }
+  }; */
+
+  const getStartDate = () => {
+    const today = new Date();
+    try {
+      if (timeRange === 'Wochen' || timeRange === '3 Monate') {
+        const weeks = preset.weeks ?? 4;
+        return subDays(today, weeks * 7 - 1);
+      }
+      if (timeRange === '6 Monate') return subMonths(today, 6);
+      if (timeRange === '1 Jahr') return subMonths(today, 12);
+      // Sicherer Fallback:
+      return subDays(today, 28);
+    } catch (err) {
+      console.warn('getStartDate failed', err);
+      return new Date(); // verhindert Folgefehler
+    }
   };
 
 
   const fetchAndFormatIntakeData = async (nutrientId) => {
     if (!user || !nutrientId) return;
-
     try {
       const startDate = getStartDate();
 
@@ -105,7 +171,6 @@ const SupplementOverviewScreen = () => {
         const takenDays = Object.values(dayMap).reduce((a, b) => a + b , 0);
         const totalDays = Object.values(dayMap).length;
         setAdherenceRate(totalDays ? Math.round((takenDays / totalDays) * 100) : 0);
-
       } else {
         // Gruppierung nach Monaten
         const monthsDiff = differenceInMonths(new Date(), startDate);
@@ -175,10 +240,22 @@ const SupplementOverviewScreen = () => {
     };
   }, [selectedNutrient, timeRange]);
 
-  
+  const endDate = new Date();
+  const startDate = getStartDate();
+  const numDaysBase = (timeRange === 'Wochen' || timeRange === '3 Monate') && preset.weeks
+    ? preset.weeks * 7
+    : differenceInDays(endDate, startDate) + 1;
+  const numDaysAligned = Math.ceil(numDaysBase / 7) * 7;
+
+  const columns = Math.ceil(numDaysAligned / 7);
+  const contentWidth = (columns * (preset.square + preset.gutter)) - preset.gutter;
+  const visibleWidth = screenWidth * 0.84;
+  const heatmapWidth = RANGE_PRESETS[timeRange]?.scrollable ? contentWidth : visibleWidth;
+  const graphHeight = (7 * SQUARE) + (6 * GUTTER) + 80;
 
   return (
     <ThemedView style={styles.container}>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
       <Spacer height={20} />
       <ThemedText title={true} style={styles.pageTitle}>Einnahme-Übersicht</ThemedText>
       <Spacer height={20} />
@@ -238,33 +315,78 @@ const SupplementOverviewScreen = () => {
           {(timeRange === 'Wochen' || timeRange === '3 Monate') && heatmapValues ? (
             <View style={styles.chartContainer}>
               <ThemedText style={styles.chartTitle}>
-                {selectedNutrient.name} - {timeRange} (Adherence{adherenceRate !== null ? `: ${adherenceRate}%` : ''})
+                {selectedNutrient.name} - {timeRange} 
+                {adherenceRate !== null ? ` (Adherence: ${adherenceRate}%)` : ''}
               </ThemedText>
 
-              {/** numDays-Berechnung **/}
-              {(() => {
-                const endDate = new Date();
-                const startDate = getStartDate();
-                const numDays =
-                  timeRange === 'Wochen'
-                    ? weeksThatFit * 7
-                    : differenceInDays(endDate, startDate) + 1; // ≈ 3 Monate
+                   {/* Heatmap */}
+              <ThemedAdherenceHeatmap
+                values={heatmapValues}
+                numDays={numDaysAligned}
+                endDate={endDate}
+                squareSize={preset.square}
+                gutterSize={preset.gutter}
+                width={heatmapWidth}
+                height={graphHeight}
+              />
 
-                // Optional: falls du sicherstellen willst, dass volle Wochen dargestellt werden:
-                const numDaysAligned = Math.ceil(numDays / 7) * 7;
+              {/* Zusatz-Insights nur im Wochen-View */}
+              {timeRange === 'Wochen' && heatmapValues && (
+                <>
+                  {/* Streak + Week Scores */}
+                  {(() => {
+                    const { current, best } = computeStreaks(heatmapValues);
+                    const weekScores = computeWeekAdherence(heatmapValues);
+                    return (
+                      <View style={{ marginTop: 40, marginBottom: 20 }}>
+                        <ThemedText style={{ fontWeight: '600', marginBottom: 8 }}>
+                          Streak: {current} Tage · Bester Streak: {best} Tage
+                        </ThemedText>
+                        <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 8 }}>
+                          {weekScores.map((pct, i) => (
+                            <View key={`wk-${i}`} style={{ alignItems: 'center' }}>
+                              <View style={{
+                                width: 16,
+                                height: Math.max(6, Math.round((pct/100) * 60)),
+                                backgroundColor: colors.secondary,
+                                borderRadius: 6
+                              }} />
+                              <Text style={{ fontSize: 10, marginTop: 4 }}>{pct}%</Text>
+                            </View>
+                          ))}
+                        </View>
+                      </View>
+                    );
+                  })()}
 
-                return (
-                  <ThemedAdherenceHeatmap
-                    values={heatmapValues}
-                    numDays={numDaysAligned}
-                    endDate={endDate}
-                    squareSize={SQUARE}
-                    gutterSize={GUTTER}
-                    // width bleibt bei 0.9 * screenWidth; wenn du exakt pixelgenau willst:
-                    // width={(Math.ceil(numDaysAligned/7) * (SQUARE + GUTTER)) - GUTTER}
-                  />
-                );
-              })()}
+                  {/* Wochentags-Muster */}
+                  {(() => {
+                    const days = ['So','Mo','Di','Mi','Do','Fr','Sa'];
+                    const hist = weekdayHistogram(heatmapValues);
+                    const max = Math.max(1, ...hist);
+                    return (
+                      <View style={{ marginTop: 16, marginBottom: 40 }}>
+                        <ThemedText style={{ fontWeight: '600', marginBottom: 8 }}>
+                          Wochentags-Muster
+                        </ThemedText>
+                        <View style={{ flexDirection: 'row', gap: 8, alignItems: 'flex-end' }}>
+                          {days.map((d, i) => (
+                            <View key={d} style={{ alignItems: 'center' }}>
+                              <View style={{
+                                width: 16,
+                                height: Math.round((hist[i]/max)*60),
+                                backgroundColor: colors.quaternary,
+                                borderRadius: 6
+                              }}/>
+                              <Text style={{ fontSize: 10, marginTop: 4 }}>{d}</Text>
+                            </View>
+                          ))}
+                        </View>
+                      </View>
+                    );
+                  })()}
+                </>
+              )}
             </View>
           ) : intakeData ? (
             <View style={styles.chartContainer}>
@@ -284,6 +406,7 @@ const SupplementOverviewScreen = () => {
           Wähle einen Nährstoff, um die Einnahmen anzuzeigen.
         </ThemedText>
       )}
+      </ScrollView>
     </ThemedView>
   );
 };

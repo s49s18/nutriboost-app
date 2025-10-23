@@ -5,7 +5,7 @@ import { FontAwesome } from '@expo/vector-icons';
 import ThemedText from '../../components/ThemedText';
 import ThemedView from '../../components/ThemedView';
 import Spacer from '../../components/Spacer';
-import { UserContext } from '../../contexts/UserContexts';
+import { useUser } from '../../hooks/useUser';
 import { NutrientsContext } from '../../contexts/NutrientsContext';
 import { ColorContext } from '../../contexts/ColorContext';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -16,7 +16,7 @@ import * as Notifications from 'expo-notifications';
 import AddReminderModal from '../../components/AddReminderModal';
 
 const ReminderList = () => {
-  const { user } = useContext(UserContext);
+  const { user } = useUser();
   const { allNutrients = [] } = useContext(NutrientsContext); // fallback
   const { colors } = useContext(ColorContext);
   const { themeName } = useTheme();

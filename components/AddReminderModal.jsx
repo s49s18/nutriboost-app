@@ -2,7 +2,7 @@ import React, { useState, useContext } from "react";
 import { Modal, View, Text, TouchableOpacity, StyleSheet, Alert, FlatList, Button } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { format } from 'date-fns';
-import { UserContext } from '../contexts/UserContexts';
+import { useUser } from '../hooks/useUser';
 import { ColorContext } from '../contexts/ColorContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { Colors } from '../constants/Colors';
@@ -19,7 +19,7 @@ const AddReminderModal = ({ visible, onClose, nutrients, onSave }) => {
   const [frequency, setFrequency] = useState("daily");
   const [selectedDays, setSelectedDays] = useState([]);
   const [showTimePicker, setShowTimePicker] = useState(false);
-  const { user } = useContext(UserContext);
+  const { user } = useUser();
   const { colors } = useContext(ColorContext);
   const { themeName } = useTheme();
   const theme = themeName === 'light' ? Colors.light : Colors.dark;

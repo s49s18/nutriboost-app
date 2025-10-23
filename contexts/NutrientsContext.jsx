@@ -1,12 +1,12 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { UserContext } from "./UserContexts";
+import { useUser } from '../hooks/useUser';
 import { format } from 'date-fns';
 
 export const NutrientsContext = createContext();
 
 export function NutrientsProvider({ children }) {
-  const { user } = useContext(UserContext); 
+  const { user } = useUser();
 
   const [allNutrients, setAllNutrients] = useState([]);
   const [trackedNutrients, setTrackedNutrients] = useState([]);

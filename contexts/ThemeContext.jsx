@@ -1,12 +1,12 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { Appearance } from 'react-native';
 import { supabase } from '../lib/supabaseClient';
-import { UserContext } from './UserContexts';
+import { useUser } from '../hooks/useUser';
 
 const ThemeContext = createContext();
 
 export const ThemeProvider = ({ children }) => {
-  const { user } = useContext(UserContext);
+  const { user } = useUser();
   const colorScheme = Appearance.getColorScheme(); // light / dark
   const [themeName, setThemeName] = useState(colorScheme || 'light');
 

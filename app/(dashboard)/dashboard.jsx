@@ -6,7 +6,7 @@ import ThemedView from '../../components/ThemedView';
 import ThemedCard from '../../components/ThemedCard';
 import { FontAwesome } from '@expo/vector-icons';
 import { Colors } from '../../constants/Colors';
-import { UserContext } from '../../contexts/UserContexts';
+import { useUser } from '../hooks/useUser';
 import ThemedLoader from '../../components/ThemedLoader';
 import { NutrientsContext } from '../../contexts/NutrientsContext';
 import Spacer from '../../components/Spacer';
@@ -21,7 +21,7 @@ import { scheduleMilestoneNotification } from '../../lib/notifications';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const StartScreen = () => {
-  const { user } = useContext(UserContext);
+  const { user } = useUser();
   const { allNutrients, trackedNutrients, takenToday, toggleTaken, loadWeekStreak, loadCurrentStreak } = useContext(NutrientsContext);
   const [weekStreak, setWeekStreak] = useState([]);
   const [currentStreak, setCurrentStreak] = useState(0);
