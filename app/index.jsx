@@ -20,7 +20,6 @@ import ThemedLoader from '../components/ThemedLoader';
 
 const Home = () => {
 
-  const imageUrl = 'https://yekfgrbbsvfimdaokldr.supabase.co/storage/v1/object/sign/assets/headerImage.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9lM2I3MTU2ZC0zZTliLTQ4ZDAtOGQwMS02OWIyODMxOTk0MzYiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJhc3NldHMvaGVhZGVySW1hZ2UuanBnIiwiaWF0IjoxNzU1MTgwMjY0LCJleHAiOjE3ODY3MTYyNjR9.AIcq5WkmBgil09K10YsKOaLboesih7Mi-v7-JsyLc3U'
   const imageUrl2 = 'https://yekfgrbbsvfimdaokldr.supabase.co/storage/v1/object/sign/assets/header2%20(1).jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9lM2I3MTU2ZC0zZTliLTQ4ZDAtOGQwMS02OWIyODMxOTk0MzYiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJhc3NldHMvaGVhZGVyMiAoMSkuanBnIiwiaWF0IjoxNzU1MTgyMzMyLCJleHAiOjE3ODY3MTgzMzJ9.UI-keEYYrilIrtRUlp4oKSRPi8p2qlAzTAs-ZfaTAcI'
 
   const { user, loading } = useUser();
@@ -79,7 +78,7 @@ const Home = () => {
                     <Text style={[styles.buttonText, {color: '#000'}]}>Registrieren</Text>
                   </TouchableOpacity>
                   <TouchableOpacity onPress={() => router.push('/login')} style={[styles.button, { backgroundColor: '#000' }]}>
-                    <Text style={styles.buttonText}>Login</Text>
+                    <Text style={styles.buttonText}>Anmelden</Text>
                   </TouchableOpacity>
                 </View>
               </>

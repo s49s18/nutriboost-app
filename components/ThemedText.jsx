@@ -1,19 +1,22 @@
-import { Text, useColorScheme } from 'react-native'
-import React from 'react'
-import { Colors } from '../constants/Colors'
-import { useTheme } from '../contexts/ThemeContext';
+import React from "react";
+import { Text } from "react-native";
+import { useTheme } from "../contexts/ThemeContext";
+import { Colors } from "../constants/Colors";
 
-const ThemedText = ({ style, title = false, ...props } ) => {
+const ThemedText = ({ style, title = false, children, ...props }) => {
   const { themeName } = useTheme();
   const theme = Colors[themeName] ?? Colors.light;
 
-  // is it a title, then use title color, otherwise use text color
-  // this is used to differentiate between title and normal text
-  const TextColor = title ? theme.title : theme.text
+  const textColor = title ? theme.title : theme.text;
 
   return (
-    <Text style={[{ backgroundColor: theme.background, color: TextColor }, style]} {...props} />
-  )
-}
+    <Text
+      style={[{ backgroundColor: theme.background, color: textColor }, style]}
+      {...props}
+    >
+      {children}
+    </Text>
+  );
+};
 
-export default ThemedText
+export default ThemedText;

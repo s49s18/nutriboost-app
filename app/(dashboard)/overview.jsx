@@ -16,6 +16,7 @@ import { supabase } from '../../lib/supabaseClient';
 import { differenceInDays, differenceInMonths, subMonths } from 'date-fns';
 import { ColorContext } from "../../contexts/ColorContext";
 import ThemedAdherenceHeatmap from '../../components/ThemedAdherenceHeatmap';
+import InfoBadge from "../../components/InfoBadge";
 
 
 
@@ -314,10 +315,33 @@ const SupplementOverviewScreen = () => {
         <>
           {(timeRange === 'Wochen' || timeRange === '3 Monate') && heatmapValues ? (
             <View style={styles.chartContainer}>
-              <ThemedText style={styles.chartTitle}>
-                {selectedNutrient.name} - {timeRange} 
-                {adherenceRate !== null ? ` (Adherence: ${adherenceRate}%)` : ''}
-              </ThemedText>
+              {/* Headline + Zeitraum + Info */}
+              <View style={{ width:"100%", alignItems:"center", marginBottom: 6 }}>
+                <ThemedText style={styles.chartTitle}>
+                  {selectedNutrient.name} - {timeRange}
+                </ThemedText>
+
+                <View style={{ flexDirection: "row", alignItems: "center", marginTop: 2 }}>
+                  <ThemedText style={{ fontSize: 12 }}>
+                    Zeitraum: Letzte {preset.weeks ?? 10} Wochen · {format(startDate, "dd.MM.yyyy")} - {format(endDate, "dd.MM.yyyy")}
+                  </ThemedText>
+
+                  <InfoBadge title="Adherence">
+                    <ThemedText title style={{ fontSize: 18, marginBottom: 8 }}>Adherence</ThemedText>
+                    <ThemedText style={{ textAlign: 'justify', marginBottom: 6 }}>
+                      <Text style={{ fontWeight: "600" }}>Adherence</Text> = Anteil der Tage im ausgewählten Zeitraum,
+                      an denen du {selectedNutrient.name} mindestens einmal eingenommen hast (0/1 pro Tag).
+                    </ThemedText>
+                  </InfoBadge>
+                </View>
+
+                {adherenceRate !== null && (
+                  <ThemedText style={{marginTop: 2 }}>
+                    Adherence (gesamt): <Text style={{ fontWeight:"700" }}>{adherenceRate}%</Text>
+                  </ThemedText>
+                )}
+              </View>
+
 
                    {/* Heatmap */}
               <ThemedAdherenceHeatmap
@@ -330,63 +354,100 @@ const SupplementOverviewScreen = () => {
                 height={graphHeight}
               />
 
-              {/* Zusatz-Insights nur im Wochen-View */}
-              {timeRange === 'Wochen' && heatmapValues && (
-                <>
-                  {/* Streak + Week Scores */}
-                  {(() => {
-                    const { current, best } = computeStreaks(heatmapValues);
-                    const weekScores = computeWeekAdherence(heatmapValues);
-                    return (
-                      <View style={{ marginTop: 40, marginBottom: 20 }}>
-                        <ThemedText style={{ fontWeight: '600', marginBottom: 8 }}>
-                          Streak: {current} Tage · Bester Streak: {best} Tage
-                        </ThemedText>
-                        <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 8 }}>
-                          {weekScores.map((pct, i) => (
-                            <View key={`wk-${i}`} style={{ alignItems: 'center' }}>
-                              <View style={{
-                                width: 16,
-                                height: Math.max(6, Math.round((pct/100) * 60)),
-                                backgroundColor: colors.secondary,
-                                borderRadius: 6
-                              }} />
-                              <Text style={{ fontSize: 10, marginTop: 4 }}>{pct}%</Text>
+                {/* Zusatz-Insights nur im Wochen-View */}
+                {timeRange === 'Wochen' && heatmapValues && (
+                  <>
+                    {/* Streak + Wochen-Scores */}
+                    {(() => {
+                      const { current, best } = computeStreaks(heatmapValues);
+                      const weekScores = computeWeekAdherence(heatmapValues);
+                      return (
+                        <View style={{ marginTop: 32, marginBottom: 20, width: "100%", alignItems: "center" }}>
+                          <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 15,}}>
+                            <View style={{ flexDirection: "column", alignItems: "center" }}>
+                              <ThemedText style={{ fontWeight: "700" }}>Streak & Wochen-Score</ThemedText>
+                              <ThemedText style={{ marginBottom: 8 }}>
+                                Streak: {current} Tage · Bester Streak: {best} Tage ·
+                              </ThemedText>
                             </View>
-                          ))}
+                          <InfoBadge title="Streak & Wochen-Score">
+                            <ThemedText title style={{ fontSize: 18, marginBottom: 8 }}>Streak & Wochen-Score</ThemedText>
+                            <ThemedText style={{ textAlign: 'justify' }}>
+                              <Text style={{ fontWeight: "600" }}>Streak</Text> bedeutet: Wie viele Tage hintereinander du deinen Nährstoff eingenommen hast.
+                            </ThemedText>
+                            <Spacer height={6}/>
+                            <ThemedText style={{ textAlign: 'justify' }}>
+                              <Text style={{ fontWeight: "600" }}>Wochen-Score</Text> = Prozentualer Anteil der Tage pro Woche,
+                              an denen du den Nährstoff genommen hast - also {( "Tage mit Einnahme ÷ 7 x 100" )}.
+                            </ThemedText>
+                          </InfoBadge>
                         </View>
-                      </View>
-                    );
-                  })()}
 
-                  {/* Wochentags-Muster */}
-                  {(() => {
-                    const days = ['So','Mo','Di','Mi','Do','Fr','Sa'];
-                    const hist = weekdayHistogram(heatmapValues);
-                    const max = Math.max(1, ...hist);
-                    return (
-                      <View style={{ marginTop: 16, marginBottom: 40 }}>
-                        <ThemedText style={{ fontWeight: '600', marginBottom: 8 }}>
-                          Wochentags-Muster
-                        </ThemedText>
-                        <View style={{ flexDirection: 'row', gap: 8, alignItems: 'flex-end' }}>
-                          {days.map((d, i) => (
-                            <View key={d} style={{ alignItems: 'center' }}>
-                              <View style={{
-                                width: 16,
-                                height: Math.round((hist[i]/max)*60),
-                                backgroundColor: colors.quaternary,
-                                borderRadius: 6
-                              }}/>
-                              <Text style={{ fontSize: 10, marginTop: 4 }}>{d}</Text>
-                            </View>
-                          ))}
+                          <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 8  }}>
+                            {weekScores.map((pct, i) => (
+                              <View key={`wk-${i}`} style={{ alignItems: 'center' }}>
+                                <View
+                                  accessible
+                                  accessibilityLabel={`Woche ${i + 1}, Score ${pct} Prozent`}
+                                  style={{
+                                    width: 16,
+                                    height: Math.max(6, Math.round((pct/100) * 90)),
+                                    backgroundColor: colors.secondary,
+                                    borderRadius: 6
+                                  }}
+                                />
+                                <ThemedText style={{ fontSize: 10, marginTop: 4 }}>{pct}%</ThemedText>
+                              </View>
+                            ))}
+                          </View>
                         </View>
-                      </View>
-                    );
-                  })()}
-                </>
-              )}
+                      );
+                    })()}
+
+                    {/* Wochentagsmuster */}
+                    {(() => {
+                      const days = ['So','Mo','Di','Mi','Do','Fr','Sa'];
+                      const hist = weekdayHistogram(heatmapValues);
+                      const max = Math.max(1, ...hist);
+                      return (
+                        <View style={{ marginTop: 16, marginBottom: 40,}}>
+                           <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 15, }}>
+                            <ThemedText style={{ fontWeight: "700"}}>Wochentags-Muster</ThemedText>
+                            <InfoBadge title="Wochentags-Muster">
+                              <ThemedText title style={{ fontSize: 18, marginBottom: 8 }}>Wochentags-Muster</ThemedText>
+                              <ThemedText style={{textAlign: 'justify'}}>
+                                Zeigt, an welchen Tagen du relativ am häufigsten eingenommen hast.
+                              </ThemedText>
+                              <ThemedText style={{textAlign: 'justify'}}>
+                                Die Balkenhöhe ist im Verhältnis zum häufigsten Tag skaliert.
+                              </ThemedText>
+                            </InfoBadge>
+                          </View>
+                          <View style={{ flexDirection: 'row', gap: 15, alignItems: 'flex-end', justifyContent: 'center' }}>
+                            {days.map((d, i) => {
+                              const h = Math.round((hist[i]/max)*60);
+                              return (
+                                <View key={d} style={{ alignItems: 'center' }}>
+                                  <View
+                                    accessible
+                                    accessibilityLabel={`${d}: ${hist[i]} Einnahmen, Balkenhöhe relativ`}
+                                    style={{
+                                      width: 16,
+                                      height: h,
+                                      backgroundColor: colors.quaternary,
+                                      borderRadius: 6
+                                    }}
+                                  />
+                                  <ThemedText style={{ fontSize: 10, marginTop: 4 }}>{d}</ThemedText>
+                                </View>
+                              );
+                            })}
+                          </View>
+                        </View>
+                      );
+                    })()}
+                  </>
+                )}
             </View>
           ) : intakeData ? (
             <View style={styles.chartContainer}>

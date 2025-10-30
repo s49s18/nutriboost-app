@@ -22,16 +22,16 @@ const AppHeader = () => {
         {user ? (
           <>
             <ThemedText style={styles.logout} onPress={logout}>
-              Logout
+              Abmelden
             </ThemedText>
           </>
         ) : (
           <>
             <Link href="/login" style={styles.link}>
-              <ThemedText>Login</ThemedText>
+              <ThemedText>Anmelden</ThemedText>
             </Link>
             <Link href="/register" style={styles.link}>
-              <ThemedText>Register</ThemedText>
+              <ThemedText>Registrieren</ThemedText>
             </Link>
           </>
         )}

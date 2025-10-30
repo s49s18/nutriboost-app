@@ -7,6 +7,7 @@ import { NutrientsProvider } from '../contexts/NutrientsContext'
 import AppHeader from '../components/AppHeader';
 import { ThemeProvider, useTheme } from '../contexts/ThemeContext';
 import { ColorProvider } from '../contexts/ColorContext';
+import AuthGate from '../components/AuthGate';
 import { NotificationPermissionProvider } from '../contexts/NotificationPermissionProvider';
 import { useFonts } from 'expo-font';
 import { useEffect } from 'react';
@@ -74,9 +75,11 @@ const RootLayout = () => {
          <NotificationPermissionProvider>
           <ThemeProvider>
             <ColorProvider>
-              <NutrientsProvider>
-                <AppWrapper />
-              </NutrientsProvider>
+              <AuthGate>
+                <NutrientsProvider>
+                  <AppWrapper />
+                </NutrientsProvider>
+              </AuthGate>
             </ColorProvider>
           </ThemeProvider>
         </NotificationPermissionProvider>

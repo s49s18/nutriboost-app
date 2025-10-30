@@ -4,8 +4,8 @@ export const Colors = {
   secondary: "#FFC107", // Helles Gelb-Orange. Symbolisiert Energie, Vitalität und Warnungen.
   tertiary: "#28a761ff", //"#00BCD4", // Ein sattes Türkis. Kann für Akzente und Hervorhebungen verwendet werden.
   quaternary: "#E59221", // Ein warmes Orange. Kann für Akzente und Hervorhebungen verwendet werden.
-  quinary: "#ADC867",
-  senary: "#8BC34A", //"#4CAF50" ,//"#28a761ff" "#26C6DA",
+  //quinary: "#ADC867",
+  //senary: "#8BC34A", //"#4CAF50" ,//"#28a761ff" "#26C6DA",
 
   // Neutraltöne für Text und Hintergrund
   neutral: {

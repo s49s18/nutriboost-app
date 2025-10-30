@@ -38,8 +38,9 @@ export default function Login() {
           setLoading(false);
           return;
         }
-        console.log('current user is: ', user);
-       // router.replace('/dashboard'); // <-- Navigate to dashboard or to '/' index.jsx
+        setLoading(false);
+        //console.log('current user is: ', user);
+        //router.replace('/dashboard'); // <-- Navigate to dashboard or to '/' index.jsx
       } catch (error) {
         console.log('Login error:', error)
         setError(error)
@@ -102,7 +103,7 @@ export default function Login() {
                 <Text style={styles.buttonText}>Login</Text>
             </ThemedButton> */}
             <TouchableOpacity style={[styles.button]} onPress={handleSubmit}>
-              <Text style={styles.buttonText}>Login</Text>
+              <Text style={styles.buttonText}>Anmelden</Text>
             </TouchableOpacity>
             <Spacer height={20}/>
             <TouchableOpacity onPress={() => router.push('/forgot-password')}>

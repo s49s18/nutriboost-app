@@ -156,7 +156,7 @@ export default function Register() {
       <Spacer height={100} />
 
       <TouchableOpacity onPress={() => router.replace('/login')}>
-                <ThemedText> Zum Login</ThemedText>
+                <ThemedText> Zur Anmeldung</ThemedText>
       </TouchableOpacity>
 
     </ThemedView>

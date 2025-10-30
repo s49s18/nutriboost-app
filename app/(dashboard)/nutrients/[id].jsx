@@ -138,7 +138,7 @@ const NutrientDetail = () => {
               </Text>
           {source?.url ? (
                 <TouchableOpacity onPress={() => Linking.openURL(source.url)}>
-                  <MaterialIcons name="link" size={20} color={colors.quinary} />
+                  <MaterialIcons name="link" size={20} color={colors.tertiary} />
                 </TouchableOpacity>
               ) : null}
             </View>
@@ -181,7 +181,7 @@ const styles = StyleSheet.create({
   infoLabel: { fontWeight: 'bold', fontSize: 15 },
   infoValue: { fontSize: 15 },
   sectionTitle: { fontWeight: 'bold', fontSize: 18, marginHorizontal: 15, marginTop: 10 },
-  text: { fontSize: 15, lineHeight: 22, marginHorizontal: 15 },
+  text: { fontSize: 15, lineHeight: 22, marginHorizontal: 15, textAlign: 'justify' },
   sourceRow: {
     flexDirection: 'row',
     alignItems: 'center',

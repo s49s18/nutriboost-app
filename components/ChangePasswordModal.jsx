@@ -53,7 +53,7 @@ const ChangePasswordModal = ({ visible, onClose, onSave}) => {
 
           <View style={styles.buttonRow}>
             <Button title="Abbrechen" onPress={onClose} color={theme.buttonColor} />
-            <Button title="Speichern" onPress={handleSave} color={colors.senary} />
+            <Button title="Speichern" onPress={handleSave} color={colors.primary} />
           </View>
         </View>
       </View>

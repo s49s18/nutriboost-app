@@ -55,7 +55,7 @@ export const ColorProvider = ({ children }) => {
 
   const mergedColors = { ...Colors, ...customColors };
 
-  const editableKeys = ["primary","secondary","tertiary","quaternary","quinary","senary"];
+  const editableKeys = ["primary","secondary","tertiary","quaternary"];
 
     const editableColors = editableKeys.reduce((acc, key) => {
     acc[key] = mergedColors[key] || Colors[key];

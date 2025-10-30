@@ -151,7 +151,7 @@ const Profile = () => {
           <Switch
             value={themeName === "dark"}
             onValueChange={toggleTheme}
-            trackColor={{ false: "#767577", true: colors.quinary}}
+            trackColor={{ false: "#767577", true: colors.tertiary}}
             thumbColor={theme.iconColorFocused}
           />
         </View>
@@ -160,7 +160,7 @@ const Profile = () => {
         {/* Color Picker Modal */}
         {/* Button zum Öffnen */}
         <TouchableOpacity onPress={() => setIsColorModalVisible(true)} style={styles.settingRow}>
-          <MaterialIcons name="palette" size={22} color={colors.quinary} />
+          <MaterialIcons name="palette" size={22} color={colors.tertiary} />
           <ThemedText style={[styles.settingText]}>Themefarben anpassen</ThemedText>
         </TouchableOpacity>
 

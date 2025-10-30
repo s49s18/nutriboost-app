@@ -80,7 +80,7 @@ export default function ForgotPasswordScreen() {
       <Spacer height={100} />
 
       <TouchableOpacity onPress={() => router.replace('/login')}>
-          <ThemedText>Zurück zum Login</ThemedText>
+          <ThemedText>Zurück zur Anmeldung</ThemedText>
       </TouchableOpacity>
     </ThemedView>
     </TouchableWithoutFeedback>

@@ -15,7 +15,7 @@ const ConfirmModal = ({ visible, onCancel, onConfirm, theme, colors }) => {
 
             <View style={styles.buttonRow}>
               <Button title="Abbrechen" onPress={onCancel} color={theme.buttonColor} />
-              <Button title="Zurücksetzen" onPress={onConfirm} color={colors.senary} />
+              <Button title="Zurücksetzen" onPress={onConfirm} color={colors.primary} />
             </View>
         </View>
         </View>

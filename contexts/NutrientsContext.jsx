@@ -92,7 +92,12 @@ export function NutrientsProvider({ children }) {
   // Toggle (hinzufügen oder entfernen)
   async function toggleTrackedNutrient(userId, nutrientId) {
     const isTracked = trackedNutrients.includes(nutrientId);
-    let updated;
+
+    // 1) Optimistic update
+    const optimistic = isTracked
+      ? trackedNutrients.filter(id => id !== nutrientId)
+      : [...trackedNutrients, nutrientId];
+    setTrackedNutrients(optimistic);
 
     try {
       if (isTracked) {
@@ -101,24 +106,24 @@ export function NutrientsProvider({ children }) {
           .delete()
           .eq('user_id', userId)
           .eq('nutrient_id', nutrientId);
-
         if (error) throw error;
-        updated = trackedNutrients.filter(id => id !== nutrientId);
       } else {
         const { error } = await supabase
           .from('user_nutrients')
           .insert([{ user_id: userId, nutrient_id: nutrientId }]);
-
         if (error) throw error;
-        updated = [...trackedNutrients, nutrientId];
       }
+      // Erfolg: nichts weiter tun (optimistic bleibt)
     } catch (err) {
-      console.error('Fehler beim Ändern des Nährstoff-Status:', err.message);
-      return;
+      console.error('Fehler beim Ändern des Nährstoff-Status:', err?.message);
+      // 2) Rollback bei Fehler
+      setTrackedNutrients(prev =>
+        isTracked ? [...prev, nutrientId] : prev.filter(id => id !== nutrientId)
+      );
+      throw err; // nach oben weiterreichen für Toast
     }
-
-    setTrackedNutrients(updated);
   }
+
 
    async function loadTakenToday(userId) {
     const { data, error } = await supabase

@@ -14,43 +14,53 @@ export const UserProvider = ({ children }) => {
   const router = useRouter();
   const [user, setUser] = useState(null); // enthält jetzt Auth- und Profil-Daten
   const [loading, setLoading] = useState(true);
+   const [authReady, setAuthReady] = useState(false); // einmaliges Initial-Ready-Flag
 
   // Lade die Benutzerdaten (inkl. Profil) aus Supabase
   const loadUser = async (session) => {
     if (!session) {
       setUser(null);
+      setLoading(false);
       return;
     }
     
+    try {
     // Rufe die Profilinformationen ab
-    const { data: profile, error: profileError } = await supabase
+    const { data: profile, error } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', session.user.id)
       .single();
 
-    if (profileError) {
-      console.error('Error fetching profile:', profileError);
+    if (error) {
+      console.error('Error fetching profile:', error.message);
       setUser(session.user); // Verwende die Basis-Sitzung, auch wenn das Profil fehlschlägt
-      return;
+    } else {
+      // Kombiniere die Benutzerdaten und das Profil
+      const fullUser = {
+        ...session.user,
+        profile: profile || null,
+      };
+      
+      setUser(fullUser);
     }
-
-    // Kombiniere die Benutzerdaten und das Profil
-    const fullUser = {
-      ...session.user,
-      profile: profile || null,
-    };
-    
-    setUser(fullUser);
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Initial Session laden und auf Änderungen reagieren
   useEffect(() => {
+    let mounted = true;
+
     const handleSession = async () => {
+      setLoading(true); 
       // Lade die initiale Session beim App-Start
       const { data: { session } } = await supabase.auth.getSession();
+      if (!mounted) return;
       await loadUser(session);
-      setLoading(false);
+      if (!mounted) return;
+      setAuthReady(true); // <- NUR HIER auf true setzen (einmalig)
     };
 
     handleSession();
@@ -58,19 +68,20 @@ export const UserProvider = ({ children }) => {
     // Listener für An- und Abmeldungen
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
+        setLoading(true);
         await loadUser(session);
       }
     );
-
-    // Bereinigung des Listeners, wenn die Komponente entfernt wird
     return () => {
-     if (subscription) subscription.unsubscribe();
+      mounted = false;
+      subscription?.unsubscribe();
     };
   }, []);
 
   useEffect(() => {
     const sub = AppState.addEventListener('change', async s => {
       if (s === 'active') {
+        setLoading(true);
         const { data: { session } } = await supabase.auth.getSession();
         await loadUser(session);
       }
@@ -354,7 +365,7 @@ export const UserProvider = ({ children }) => {
   }
 
   return (
-    <UserContext.Provider value={{ user, login, logout, register, resetPassword, updateUser, uploadProfileImage, updateProfile, deleteProfile, deleteUser, loading }}>
+    <UserContext.Provider value={{ user, login, logout, register, resetPassword, updateUser, uploadProfileImage, updateProfile, deleteProfile, deleteUser, loading, authReady }}>
       {children}
     </UserContext.Provider>
   );

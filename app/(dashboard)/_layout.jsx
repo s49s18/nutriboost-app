@@ -27,19 +27,19 @@ export default function DashboardLayout() {
         />
         <Tabs.Screen 
           name="nutrients"
-          options={{ title: "Nutrients", tabBarIcon: ({ color, focused }) => <Ionicons name={focused ? "nutrition" : "nutrition-outline"} color={color} size={24} /> }} 
+          options={{ title: "Nährstoffe", tabBarIcon: ({ color, focused }) => <Ionicons name={focused ? "nutrition" : "nutrition-outline"} color={color} size={24} /> }} 
         />
         <Tabs.Screen 
           name="overview"
-          options={{ title: "Charts", tabBarIcon: ({ color, focused }) => <Ionicons name={focused ? "bar-chart" : "bar-chart-outline"} color={color} size={24} /> }} 
+          options={{ title: "Verlauf", tabBarIcon: ({ color, focused }) => <Ionicons name={focused ? "bar-chart" : "bar-chart-outline"} color={color} size={24} /> }} 
         />
         <Tabs.Screen 
           name="reminderList"
-          options={{ title: "Reminder", tabBarIcon: ({ color, focused }) => <Ionicons name={focused ? "time" : "time-outline"} color={color} size={24} /> }} 
+          options={{ title: "Erinnerungen", tabBarIcon: ({ color, focused }) => <Ionicons name={focused ? "time" : "time-outline"} color={color} size={24} /> }} 
         />
         <Tabs.Screen 
           name="profile"
-          options={{ title: "Settings", tabBarIcon: ({ color, focused }) => <Ionicons name={focused ? "settings" : "settings-outline"} color={color} size={24} /> }} 
+          options={{ title: "Einstellungen", tabBarIcon: ({ color, focused }) => <Ionicons name={focused ? "settings" : "settings-outline"} color={color} size={24} /> }} 
         />
       </Tabs>
       </SafeAreaView>

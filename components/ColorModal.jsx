@@ -58,7 +58,7 @@ const ColorModal = ({ visible, onClose, onSave, initialColors }) => {
 
           <View style={styles.buttonRow}>
             <Button title="Abbrechen" onPress={onClose} color={theme.buttonColor} />
-            <Button title="Speichern" onPress={handleSave} color={tempColors.senary} />
+            <Button title="Speichern" onPress={handleSave} color={tempColors.primary} />
           </View>
         </View>
       </View>

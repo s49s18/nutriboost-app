@@ -300,7 +300,7 @@ const StartScreen = () => {
             fadeOut={true}
             explosionSpeed={550}    
             fallSpeed={1500}        
-            colors={[colors.primary, colors.secondary, colors.tertiary, colors.quintery, colors.quaterny, colors.senary, "#FF69B4", "#e564ffff"]}
+            colors={[colors.primary, colors.secondary, colors.tertiary, colors.quaterny, "#FF69B4", "#e564ffff"]}
         />
      )}
 
