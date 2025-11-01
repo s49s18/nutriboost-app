@@ -135,8 +135,8 @@ const styles = StyleSheet.create({
     fontFamily: 'Comfortaa',
   },
   button: {
-    padding: 18,
-    paddingHorizontal: 140,
+    padding: 16,
+    paddingHorizontal: 115,
     borderRadius: 5,
     alignItems: 'center',
     backgroundColor: '#000'
