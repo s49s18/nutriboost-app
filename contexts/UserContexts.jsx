@@ -7,20 +7,18 @@ import { AppState } from 'react-native';
 import { useRouter } from 'expo-router';
 
 // Erstelle den Kontext
-export const UserContext = createContext();
+export const UserContext = createContext(null);
 
 // Erstelle den User-Provider
 export const UserProvider = ({ children }) => {
-  const router = useRouter();
-  const [user, setUser] = useState(null); // enthält jetzt Auth- und Profil-Daten
-  const [loading, setLoading] = useState(true);
-   const [authReady, setAuthReady] = useState(false); // einmaliges Initial-Ready-Flag
+  const [user, setUser] = useState(null); 
+  const [loading, setLoading] = useState(false);
+  const [authReady, setAuthReady] = useState(false);
 
   // Lade die Benutzerdaten (inkl. Profil) aus Supabase
   const loadUser = async (session) => {
     if (!session) {
       setUser(null);
-      setLoading(false);
       return;
     }
     
@@ -32,107 +30,86 @@ export const UserProvider = ({ children }) => {
       .eq('id', session.user.id)
       .single();
 
-    if (error) {
+     if (error) {
       console.error('Error fetching profile:', error.message);
-      setUser(session.user); // Verwende die Basis-Sitzung, auch wenn das Profil fehlschlägt
-    } else {
+      setUser(session.user);
+     } else {
       // Kombiniere die Benutzerdaten und das Profil
-      const fullUser = {
-        ...session.user,
-        profile: profile || null,
-      };
-      
-      setUser(fullUser);
-    }
-    } finally {
-      setLoading(false);
-    }
+       setUser({ ...session.user, profile: profile ?? null })
+     }
+    } catch (e) {
+    console.error('Profile fetch exception:', e)
+    setUser(session.user)
+   }
   };
 
-  // Initial Session laden und auf Änderungen reagieren
+  // 1) Initiale Session laden
   useEffect(() => {
-    let mounted = true;
-
-    const handleSession = async () => {
-      setLoading(true); 
-      // Lade die initiale Session beim App-Start
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!mounted) return;
-      await loadUser(session);
-      if (!mounted) return;
-      setAuthReady(true); // <- NUR HIER auf true setzen (einmalig)
-    };
-
-    handleSession();
-
-    // Listener für An- und Abmeldungen
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        setLoading(true);
-        await loadUser(session);
+    let mounted = true
+    ;(async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (!mounted) return
+        await loadUser(session)
+      } finally {
+        if (mounted) setAuthReady(true)
       }
-    );
-    return () => {
-      mounted = false;
-      subscription?.unsubscribe();
-    };
-  }, []);
+    })()
+    return () => { mounted = false }
+  }, [])
 
+  // 2) Auth-Änderungen abonnieren 
   useEffect(() => {
-    const sub = AppState.addEventListener('change', async s => {
+    const { data: sub } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      // Kein authReady toggeln hier – nur User aktualisieren
+      await loadUser(session)
+    })
+    return () => { sub.subscription?.unsubscribe() }
+  }, [])
+
+  // 3) Beim Zurückkommen in den Vordergrund re-checken
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', async (s) => {
       if (s === 'active') {
-        setLoading(true);
-        const { data: { session } } = await supabase.auth.getSession();
-        await loadUser(session);
+        try {
+          const { data: { session } } = await supabase.auth.getSession()
+          await loadUser(session)
+        } catch (e) {
+          console.error('AppState getSession failed:', e)
+        }
       }
-    });
-    return () => sub.remove();
-  }, []);
+    })
+    return () => sub.remove()
+  }, [])
 
 
   // Login-Funktion
   async function login(email, password) {
-    setLoading(true);
+    setLoading(true)
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) {
-        setLoading(false);
-        return { success: false, error: error.message };
-      }
-      
-      // Profildaten werden sofort nach erfolgreichem Login geladen
-      await loadUser(data.session);
-      
-      setLoading(false);
-      return { success: true };
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+      if (error) return { success: false, error: error.message }
+      await loadUser(data.session)
+      return { success: true }
     } catch (err) {
-      setLoading(false);
-      return { success: false, error: err.message || 'Unbekannter Fehler'};
+      return { success: false, error: err?.message ?? 'Unbekannter Fehler' }
+    } finally {
+      setLoading(false)
     }
   }
 
   // Logout
   async function logout() {
-    setLoading(true);
+    setLoading(true)
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        setLoading(false);
-        return { success: false, error: error.message };
-      }
-      // Der Zustand wird durch den onAuthStateChange-Listener auf null gesetzt.
-      // setLoading hier zu setzen ist unnötig, da der nächste Zustand bereits verarbeitet wird.
-      // Fallback: falls onAuthStateChange nicht rechtzeitig reagiert
-      setUser(null);
-      setLoading(false);
-      return { success: true };
+      const { error } = await supabase.auth.signOut()
+      if (error) return { success: false, error: error.message }
+      setUser(null) // falls das Event mal klemmt, sofort visuell raus
+      return { success: true }
     } catch (err) {
-      setLoading(false);
-      return { success: false, error: err.message};
+      return { success: false, error: err?.message ?? 'Unbekannter Fehler' }
+    } finally {
+      setLoading(false)
     }
   }
 

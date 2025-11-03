@@ -22,7 +22,7 @@ const Home = () => {
 
   const imageUrl2 = 'https://yekfgrbbsvfimdaokldr.supabase.co/storage/v1/object/sign/assets/header2%20(1).jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9lM2I3MTU2ZC0zZTliLTQ4ZDAtOGQwMS02OWIyODMxOTk0MzYiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJhc3NldHMvaGVhZGVyMiAoMSkuanBnIiwiaWF0IjoxNzU1MTgyMzMyLCJleHAiOjE3ODY3MTgzMzJ9.UI-keEYYrilIrtRUlp4oKSRPi8p2qlAzTAs-ZfaTAcI'
 
-  const { user, loading } = useUser();
+  const { user } = useUser();
   const { colors } = useContext(ColorContext);
   const router = useRouter();
 
@@ -31,13 +31,8 @@ const Home = () => {
       router.replace('/dashboard');
     }
   }, [user]);  */
-  if (loading) {
-    return (
-      <ThemedLoader />
-    );
-  }
-  return user ? <Redirect href="/dashboard" /> : (
-  
+
+  return( 
     <SafeAreaProvider>
     <SafeAreaView style={{ flex: 1 }}>
     <ThemedView style={styles.container}>

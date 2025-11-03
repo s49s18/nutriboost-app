@@ -33,15 +33,10 @@ const AppWrapper = () => {
   // useTheme hier funktioniert, weil wir innerhalb von ThemeProvider sind
   const { themeName } = useTheme();
   const theme = themeName === 'light' ? Colors.light : Colors.dark;
-  const { user, loading } = useUser();
 
   return (
      <View style={[styles.container, { backgroundColor: theme.background }]}>
-      <Stack
-        screenOptions={{
-          headerShown: false,
-        }}
-      >
+      <Stack screenOptions={{ headerShown: false }}>
        <Stack.Screen name="index" />
         <Stack.Screen name="(auth)" />
         <Stack.Screen name="(dashboard)" />
@@ -50,49 +45,49 @@ const AppWrapper = () => {
    );
  };
 
-const RootLayout = () => {
+function RootInner() {
   // Fonts werden geladen
   const [fontsLoaded] = useFonts({
     'Montserrat': require('../assets/fonts/Montserrat-VariableFont_wght.ttf'),
     'Comfortaa': require('../assets/fonts/Comfortaa-VariableFont_wght.ttf'),
-    //'MyFont-Bold': require('../assets/fonts/MyFont-Bold.ttf'),
-  });
+  })
+  const { authReady } = useUser()
 
-  // Zeige den Splash Screen, bis die Fonts geladen sind
   useEffect(() => {
-    if (fontsLoaded) {
-      SplashScreen.hideAsync();
+    if (fontsLoaded && authReady) {
+      SplashScreen.hideAsync()
     }
-  }, [fontsLoaded]);
+  }, [fontsLoaded, authReady])
 
-  // Wenn Fonts noch nicht geladen sind, render nichts
-  if (!fontsLoaded) {
-    return null;
-  }
+  // Wichtig: nichts rendern, solange Splash sichtbar bleiben soll
+  if (!fontsLoaded || !authReady) return null
 
   return (
-      <UserProvider>
-         <NotificationPermissionProvider>
-          <ThemeProvider>
-            <ColorProvider>
-              <AuthGate>
-                <NutrientsProvider>
-                  <AppWrapper />
-                </NutrientsProvider>
-              </AuthGate>
-            </ColorProvider>
-          </ThemeProvider>
-        </NotificationPermissionProvider>
-      </UserProvider>
-  );
-};
+    <NotificationPermissionProvider>
+      <ThemeProvider>
+        <ColorProvider>
+          <AuthGate>
+            <NutrientsProvider>
+              <AppWrapper />
+            </NutrientsProvider>
+          </AuthGate>
+        </ColorProvider>
+      </ThemeProvider>
+    </NotificationPermissionProvider>
+  )
+}
 
-export default RootLayout;
+export default function RootLayout() {
+  return (
+    <UserProvider>
+      <RootInner />
+    </UserProvider>
+  )
+}
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-});
-
+})
 
 {/* This file is used to define the layout of the app.
 It wraps around all the pages and can be used to add common elements like headers or footers.
