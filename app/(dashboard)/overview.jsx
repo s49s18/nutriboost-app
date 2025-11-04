@@ -323,7 +323,7 @@ const SupplementOverviewScreen = () => {
 
                 <View style={{ flexDirection: "row", alignItems: "center", marginTop: 2 }}>
                   <ThemedText style={{ fontSize: 12 }}>
-                    Zeitraum: Letzte {preset.weeks ?? 10} Wochen · {format(startDate, "dd.MM.yyyy")} - {format(endDate, "dd.MM.yyyy")}
+                    Zeitraum: Letzten {preset.weeks ?? 10} Wochen · {format(startDate, "dd.MM.yyyy")} - {format(endDate, "dd.MM.yyyy")}
                   </ThemedText>
 
                   <InfoBadge title="Adherence">
@@ -367,7 +367,7 @@ const SupplementOverviewScreen = () => {
                             <View style={{ flexDirection: "column", alignItems: "center" }}>
                               <ThemedText style={{ fontWeight: "700" }}>Streak & Wochen-Score</ThemedText>
                               <ThemedText style={{ marginBottom: 8 }}>
-                                Streak: {current} Tage · Bester Streak: {best} Tage ·
+                                Streak: {current} Tage · Beste Streak: {best} Tage ·
                               </ThemedText>
                             </View>
                           <InfoBadge title="Streak & Wochen-Score">

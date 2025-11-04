@@ -20,13 +20,6 @@ export default function AuthGate({ children }) {
     const inApp  = segments[0] === '(dashboard)'
 
     if (user && !inApp) {
-      // -> Eingeloggt, aber nicht im App-Bereich: ab ins Dashboard
-      // Wähle das Ziel passend zu deiner Dateistruktur:
-
-      // Option A: dein Dashboard ist app/(dashboard)/index.tsx
-      //router.replace('/(dashboard)')
-
-      // Option B: dein Dashboard ist app/(dashboard)/dashboard.tsx
        router.replace('/(dashboard)/dashboard')
 
       return

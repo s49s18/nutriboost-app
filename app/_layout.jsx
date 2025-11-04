@@ -8,6 +8,7 @@ import AppHeader from '../components/AppHeader';
 import { ThemeProvider, useTheme } from '../contexts/ThemeContext';
 import { ColorProvider } from '../contexts/ColorContext';
 import AuthGate from '../components/AuthGate';
+import SplashBoundary from '../components/SplashBoundary'
 import { NotificationPermissionProvider } from '../contexts/NotificationPermissionProvider';
 import { useFonts } from 'expo-font';
 import { useEffect } from 'react';
@@ -45,42 +46,22 @@ const AppWrapper = () => {
    );
  };
 
-function RootInner() {
-  // Fonts werden geladen
-  const [fontsLoaded] = useFonts({
-    'Montserrat': require('../assets/fonts/Montserrat-VariableFont_wght.ttf'),
-    'Comfortaa': require('../assets/fonts/Comfortaa-VariableFont_wght.ttf'),
-  })
-  const { authReady } = useUser()
-
-  useEffect(() => {
-    if (fontsLoaded && authReady) {
-      SplashScreen.hideAsync()
-    }
-  }, [fontsLoaded, authReady])
-
-  // Wichtig: nichts rendern, solange Splash sichtbar bleiben soll
-  if (!fontsLoaded || !authReady) return null
-
-  return (
-    <NotificationPermissionProvider>
-      <ThemeProvider>
-        <ColorProvider>
-          <AuthGate>
-            <NutrientsProvider>
-              <AppWrapper />
-            </NutrientsProvider>
-          </AuthGate>
-        </ColorProvider>
-      </ThemeProvider>
-    </NotificationPermissionProvider>
-  )
-}
-
 export default function RootLayout() {
   return (
     <UserProvider>
-      <RootInner />
+      <SplashBoundary>
+        <NotificationPermissionProvider>
+          <ThemeProvider>
+            <ColorProvider>
+              <AuthGate>
+                <NutrientsProvider>
+                  <AppWrapper />
+                </NutrientsProvider>
+              </AuthGate>
+            </ColorProvider>
+          </ThemeProvider>
+        </NotificationPermissionProvider>
+      </SplashBoundary>
     </UserProvider>
   )
 }

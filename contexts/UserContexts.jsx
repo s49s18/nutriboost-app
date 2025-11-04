@@ -7,7 +7,13 @@ import { AppState } from 'react-native';
 import { useRouter } from 'expo-router';
 
 // Erstelle den Kontext
-export const UserContext = createContext(null);
+export const UserContext = createContext({
+  user: null,
+  authReady: false,
+  loading: false,
+  login: async () => ({ success: false }),
+  logout: async () => ({ success: false }),
+})
 
 // Erstelle den User-Provider
 export const UserProvider = ({ children }) => {
@@ -46,22 +52,27 @@ export const UserProvider = ({ children }) => {
   // 1) Initiale Session laden
   useEffect(() => {
     let mounted = true
+    let watchdog = setTimeout(() => {
+      if (mounted) setAuthReady(true)        // Fallback nach 3.5s
+    }, 3500)
+
     ;(async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession()
         if (!mounted) return
         await loadUser(session)
       } finally {
-        if (mounted) setAuthReady(true)
+        if (mounted) setAuthReady(true)      // Normaler Weg
+        clearTimeout(watchdog)
       }
     })()
-    return () => { mounted = false }
+
+    return () => { mounted = false; clearTimeout(watchdog) }
   }, [])
 
-  // 2) Auth-Änderungen abonnieren 
+  // 2) Auth-Events
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      // Kein authReady toggeln hier – nur User aktualisieren
       await loadUser(session)
     })
     return () => { sub.subscription?.unsubscribe() }
