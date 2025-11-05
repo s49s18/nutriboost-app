@@ -17,6 +17,7 @@ import ThemedText from '../components/ThemedText'
 import { Colors } from '../constants/Colors';
 import TitleLogo from '../assets/img/title_logo_neutral.png'
 import ThemedLoader from '../components/ThemedLoader';
+import GuestOnly from '../components/auth/GuestOnly';
 
 const Home = () => {
 
@@ -32,7 +33,9 @@ const Home = () => {
     }
   }, [user]);  */
 
+
   return( 
+    <GuestOnly>
     <SafeAreaProvider>
     <SafeAreaView style={{ flex: 1 }}>
     <ThemedView style={styles.container}>
@@ -82,6 +85,7 @@ const Home = () => {
     </ThemedView>
     </SafeAreaView>
     </SafeAreaProvider>
+    </GuestOnly>
   )
 }
 

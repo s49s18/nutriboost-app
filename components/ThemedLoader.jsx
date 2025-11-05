@@ -14,7 +14,7 @@ const ThemedLoader = () => {
             justifyContent: 'center',
             alignItems: 'center',
         }}>
-            <ActivityIndicator size="large" color={theme.text} />
+            <ActivityIndicator size="large" color={theme.highlight} />
         </ThemedView>
     )
 }

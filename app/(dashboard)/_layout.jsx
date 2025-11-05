@@ -1,14 +1,19 @@
-import { Tabs } from "expo-router"
+import { Redirect, Tabs } from "expo-router"
 import { useColorScheme } from "react-native"
 import { Colors } from "../../constants/Colors"
 import { Ionicons } from "@expo/vector-icons"
 import UserOnly from "../../components/auth/UserOnly"
 import { useTheme } from "../../contexts/ThemeContext"
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useUser } from '../../hooks/useUser'
 
 export default function DashboardLayout() {
   const { themeName } = useTheme();
   const theme = Colors[themeName] ?? Colors.light;
+
+/*   if (!user) {
+    return <Redirect href="/login"/>
+  } */
 
   return (
     <UserOnly>
@@ -43,6 +48,6 @@ export default function DashboardLayout() {
         />
       </Tabs>
       </SafeAreaView>
-    </UserOnly>
+      </UserOnly>
   )
 }

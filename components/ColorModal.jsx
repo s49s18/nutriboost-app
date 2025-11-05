@@ -9,13 +9,19 @@ const ColorModal = ({ visible, onClose, onSave, initialColors }) => {
   const theme = themeName === "light" ? DefaultColors.light : DefaultColors.dark;
 
   const [tempColors, setTempColors] = useState(initialColors);
+  const [activeColor, setActiveColor] = useState(null);
 
   useEffect(() => {
     setTempColors(initialColors);
+    console.log(initialColors);
+    const firstKey = Object.keys(initialColors || {})[0];
+    setActiveColor(firstKey ? initialColors[firstKey] : null);
   }, [initialColors]);
 
   const handleColorChange = (key, color) => {
     setTempColors({ ...tempColors, [key]: color });
+    console.log(color)
+    setActiveColor(color);
   };
 
   const handleSave = () => {
@@ -32,7 +38,7 @@ const ColorModal = ({ visible, onClose, onSave, initialColors }) => {
     >
       <View style={styles.overlay}>
         <View style={[styles.modalContainer, { backgroundColor: theme.background }]}>
-          <Text style={[styles.title, { color: theme.bwturned}]}>Farben anpassen  🎨</Text>
+          <Text style={[styles.title, { color: theme.bwturned}]}>Farbe anpassen  🎨</Text>
 
           <ScrollView style={{ flex: 1 }}>
             {Object.keys(initialColors).map((key) => (
@@ -58,7 +64,7 @@ const ColorModal = ({ visible, onClose, onSave, initialColors }) => {
 
           <View style={styles.buttonRow}>
             <Button title="Abbrechen" onPress={onClose} color={theme.buttonColor} />
-            <Button title="Speichern" onPress={handleSave} color={tempColors.primary} />
+            <Button title="Speichern" onPress={handleSave} color={activeColor ?? theme.buttonColor} />
           </View>
         </View>
       </View>
