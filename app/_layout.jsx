@@ -73,13 +73,11 @@ const RootLayout = () => {
       <NotificationPermissionProvider>
         <ThemeProvider>
           <ColorProvider>
-            <AuthGate>
               <NutrientsProvider>
                 <ReadyGate fontsLoaded={fontsLoaded}>
                   <AppWrapper />
                 </ReadyGate>
               </NutrientsProvider>
-            </AuthGate>
           </ColorProvider>
         </ThemeProvider>
       </NotificationPermissionProvider>

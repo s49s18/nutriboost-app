@@ -16,6 +16,10 @@ export const UserProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [authReady, setAuthReady] = useState(false);
 
+  useEffect(() => {
+    console.log("UserProvider mounted");
+  }, []);
+
   // Lade die Benutzerdaten (inkl. Profil) aus Supabase
   const loadUser = async (session) => {
     if (!session) {
