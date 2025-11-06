@@ -4,6 +4,7 @@ import ThemedLoader from "../ThemedLoader";
 
 const UserOnly = ({ children }) => {
   const { user, authReady } = useUser();
+  console.log("User Only aufgerufen")
   if (!authReady) return <ThemedLoader />; // nur bis zur Initial-Entscheidung
   if (!user) return <Redirect href="/" />;
   return children;

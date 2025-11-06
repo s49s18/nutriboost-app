@@ -49,10 +49,14 @@ export const UserProvider = ({ children }) => {
     let mounted = true
     ;(async () => {
       try {
+        console.log("initale session gestartet...")
         const { data: { session } } = await supabase.auth.getSession()
+        console.log("Session loaded")
         if (!mounted) return
         await loadUser(session)
+        console.log("user loaded" + session)
       } finally {
+        console.log(mounted)
         if (mounted) setAuthReady(true)
       }
     })()

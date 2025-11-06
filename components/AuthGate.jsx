@@ -1,4 +1,3 @@
-// components/AuthGate.tsx
 import React, { useEffect } from 'react'
 import { ActivityIndicator, View } from 'react-native'
 import { useRouter, useSegments } from 'expo-router'

@@ -4,8 +4,9 @@ import ThemedLoader from "../ThemedLoader";
 
 const GuestOnly = ({ children }) => {
   const { user, authReady } = useUser();
+  console.log("Guest only aufgerufen mit" + {user} + {authReady})
   if (!authReady) return <ThemedLoader />; // nur bis zur Initial-Entscheidung
-  if (user) return <Redirect href="/dashboard" />;
+  if (user) return <Redirect href="/(dashboard)/dashboard" />;
   return children;
 };
 
