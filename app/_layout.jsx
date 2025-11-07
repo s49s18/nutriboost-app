@@ -31,12 +31,9 @@ const AppWrapper = () => {
   const theme = themeName === 'light' ? Colors.light : Colors.dark;
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
-      <Stack
-        screenOptions={{
-          headerShown: false,
-        }}
-      >
+      <Stack initialRouteName="(dashboard)" screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(dashboard)" />
+        <Stack.Screen name="(auth)" />
         <Stack.Screen name="index" />
       </Stack>
     </View>
@@ -44,29 +41,29 @@ const AppWrapper = () => {
 };
 
 // Wartet auf Fonts + Auth, blendet DANN Splash aus
-const ReadyGate = ({ fontsLoaded, children }) => {
+const ReadyGate = ({ children }) => {
   const { authReady } = useUser();
   console.log("Auf App-Startseite gelandet...")
   useEffect(() => {
-    if (fontsLoaded && authReady) {
-      console.log("Fonts loaded & Auth is ready...")
+    if (authReady) {
+      console.log("Auth is ready...")
       SplashScreen.hideAsync();
     }
-  }, [fontsLoaded, authReady]);
+  }, [authReady]);
 
-  if (!fontsLoaded || !authReady) {
+  if (!authReady) {
     console.log("Warte bis Fonts und Auth geladen sind...")
-    console.log("Fonts loaded: "+fontsLoaded + " Auth Ready: "+authReady)
+    console.log(" Auth Ready: "+authReady)
     return <ThemedLoader />;
   }
   return children;
 };
 
 const RootLayout = () => {
-  const [fontsLoaded] = useFonts({
+/*   const [fontsLoaded] = useFonts({
     'Montserrat': require('../assets/fonts/Montserrat-VariableFont_wght.ttf'),
     'Comfortaa': require('../assets/fonts/Comfortaa-VariableFont_wght.ttf'),
-  });
+  }); */
 
   return (
     <UserProvider>
@@ -74,7 +71,7 @@ const RootLayout = () => {
         <ThemeProvider>
           <ColorProvider>
               <NutrientsProvider>
-                <ReadyGate fontsLoaded={fontsLoaded}>
+                <ReadyGate>
                   <AppWrapper />
                 </ReadyGate>
               </NutrientsProvider>

@@ -29,6 +29,7 @@ export const UserProvider = ({ children }) => {
     
     try {
     // Rufe die Profilinformationen ab
+    console.log("loadUser gestartet...")
     const { data: profile, error } = await supabase
       .from('profiles')
       .select('*')
@@ -40,6 +41,7 @@ export const UserProvider = ({ children }) => {
       setUser(session.user);
      } else {
       // Kombiniere die Benutzerdaten und das Profil
+      console.log("Set User" +profile)
        setUser({ ...session.user, profile: profile ?? null })
      }
     } catch (e) {
@@ -56,11 +58,23 @@ export const UserProvider = ({ children }) => {
         console.log("initale session gestartet...")
         const { data: { session } } = await supabase.auth.getSession()
         console.log("Session loaded")
+
+        if (mounted) {
+          setAuthReady(true) 
+          console.log("Auth Ready: TRUE (App will now transition)")
+        }
+        
         if (!mounted) return
-        await loadUser(session)
-        console.log("user loaded" + session)
-      } finally {
-        console.log(mounted)
+
+        if (session) {
+         console.log("Starte Profil-Laden im Hintergrund...")
+         loadUser(session)
+         console.log("user loaded" + session)
+      } else {
+        setUser(null)
+      }
+    } catch (e) {
+        console.error("Initial session check failed:", e)
         if (mounted) setAuthReady(true)
       }
     })()
@@ -72,7 +86,7 @@ export const UserProvider = ({ children }) => {
     const { data: sub } = supabase.auth.onAuthStateChange(async (_event, session) => {
       // Kein authReady toggeln hier – nur User aktualisieren
       console.log('auth change:', _event, !!session);
-      await loadUser(session)
+      loadUser(session)
     })
     return () => { sub.subscription?.unsubscribe() }
   }, [])
@@ -83,7 +97,7 @@ export const UserProvider = ({ children }) => {
       if (s === 'active') {
         try {
           const { data: { session } } = await supabase.auth.getSession()
-          await loadUser(session)
+          loadUser(session)
         } catch (e) {
           console.error('AppState getSession failed:', e)
         }
